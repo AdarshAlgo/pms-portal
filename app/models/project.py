@@ -8,6 +8,14 @@ class Department(db.Model):
     code = db.Column(db.String(20), unique=True, nullable=False)
     head_of_department_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    @classmethod
+    def get_ordered(cls):
+        """Returns departments with MCA prioritized at the top, followed by alphabetical order."""
+        return cls.query.order_by(
+            db.case((cls.code == 'MCA', 1), else_=2),
+            cls.name.asc()
+        ).all()
+
 class AcademicTerm(db.Model):
     __tablename__ = 'academic_terms'
     id = db.Column(db.Integer, primary_key=True)

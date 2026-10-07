@@ -59,7 +59,7 @@ def dashboard():
     fifteen_mins_ago = datetime.utcnow() - timedelta(minutes=15)
     active_online_users = User.query.filter(User.last_seen_at >= fifteen_mins_ago).all()
     
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     all_projects = Project.query.all()
     recent_logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(10).all()
     if not recent_logs:
@@ -115,7 +115,7 @@ def manage_users():
 
     users = query.order_by(User.id.asc()).all()
     roles = Role.query.all()
-    departments = Department.query.all()
+    departments = Department.get_ordered()
 
     fifteen_mins_ago = datetime.utcnow() - timedelta(minutes=15)
     online_count = User.query.filter(User.last_seen_at >= fifteen_mins_ago).count()
@@ -414,7 +414,7 @@ def manage_teams():
     """Visual Cohort & Team Manager: view members, guides, reassign mentors."""
     teams = Team.query.order_by(Team.created_at.desc()).all()
     faculties = User.query.join(Role).filter(Role.role_name == 'faculty', User.is_active == True).all()  # noqa: E712
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     current_term = AcademicTerm.query.filter_by(is_current=True).first() or AcademicTerm.query.first()
 
     return render_template(
@@ -902,7 +902,7 @@ def dispatch_risk_warning(team_id):
 def analytics():
     """Department-wide analytics, Chart.js telemetry, criteria score bell curve."""
     projects = Project.query.all()
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     milestones = Milestone.query.order_by(Milestone.milestone_order.asc()).all()
 
     # Calculate criteria averages
@@ -1089,6 +1089,6 @@ def update_permission(user_id):
 
 @admin_bp.route('/departments', methods=['GET', 'POST'])
 def manage_departments():
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     faculties = User.query.join(Role).filter(Role.role_name == 'faculty').all()
     return render_template('admin/departments.html', departments=departments, faculties=faculties)

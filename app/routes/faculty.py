@@ -395,7 +395,7 @@ def reviews_inbox():
 @faculty_bp.route('/department')
 def department_overview():
     """Departmental capstone cohort tracking."""
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     projects = Project.query.all()
     return render_template('faculty/department.html', departments=departments, projects=projects)
 

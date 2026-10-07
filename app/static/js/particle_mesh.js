@@ -35,32 +35,35 @@
     const PALETTES = {
         dark: {
             nodes: [
-                { r: 192, g: 132, b: 252, baseAlpha: 0.88, name: 'pastel-purple' }, // Soft Glowing Pastel Purple
-                { r: 56,  g: 189, b: 248, baseAlpha: 0.90, name: 'pastel-cyan'   }, // Luminous Pastel Cyan
-                { r: 251, g: 146, b: 60,  baseAlpha: 0.88, name: 'pastel-orange' }, // Soft Glowing Light Orange
-                { r: 129, g: 140, b: 248, baseAlpha: 0.85, name: 'pastel-indigo' }, // Soft Electric Indigo
-                { r: 52,  g: 211, b: 153, baseAlpha: 0.82, name: 'pastel-emerald'}  // Mint Emerald
+                { r: 0,   g: 242, b: 254, baseAlpha: 0.95, name: 'neon-cyan'       }, // Vibrant Glowing Cyan #00f2fe
+                { r: 168, g: 85,  b: 247, baseAlpha: 0.92, name: 'glowing-purple'  }, // Radiant Glowing Purple #a855f7
+                { r: 251, g: 146, b: 60,  baseAlpha: 0.92, name: 'neon-orange'     }, // Soft Glowing Neon Orange #fb923c
+                { r: 127, g: 0,   b: 255, baseAlpha: 0.90, name: 'electric-violet' }, // Vibrant Electric Violet #7f00ff
+                { r: 56,  g: 189, b: 248, baseAlpha: 0.92, name: 'pastel-cyan'     }, // Sky Cyan #38bdf8
+                { r: 52,  g: 211, b: 153, baseAlpha: 0.88, name: 'pastel-emerald'  }  // Mint Emerald #34d399
             ],
-            lineRgb: '165, 180, 252',
-            lineAlphaMax: 0.18,
-            glowRgb: '192, 132, 252'
+            lineRgb: '0, 242, 254',           // Glowing Cyan #00f2fe
+            lineColor: '#00f2fe',
+            lineAlphaMax: 0.55,               // Opacity 0.40 - 0.60 per specification
+            glowRgb: '0, 242, 254'
         },
         light: {
             nodes: [
-                { r: 168, g: 85,  b: 247, baseAlpha: 0.78, name: 'purple' }, // Radiant Violet
-                { r: 6,   g: 182, b: 212, baseAlpha: 0.82, name: 'cyan'   }, // Sky Cyan
-                { r: 249, g: 115, b: 22,  baseAlpha: 0.78, name: 'orange' }, // Warm Amber Orange
-                { r: 99,  g: 102, b: 241, baseAlpha: 0.78, name: 'indigo' }, // Royal Indigo
-                { r: 16,  g: 185, b: 129, baseAlpha: 0.75, name: 'emerald'}  // Jade Emerald
+                { r: 6,   g: 182, b: 212, baseAlpha: 0.88, name: 'cyan'   }, // Sky Cyan #06b6d4
+                { r: 147, g: 51,  b: 234, baseAlpha: 0.88, name: 'purple' }, // Radiant Violet #9333ea
+                { r: 234, g: 88,  b: 12,  baseAlpha: 0.88, name: 'orange' }, // Warm Neon Orange #ea580c
+                { r: 99,  g: 102, b: 241, baseAlpha: 0.88, name: 'indigo' }, // Royal Indigo #6366f1
+                { r: 16,  g: 185, b: 129, baseAlpha: 0.82, name: 'emerald'}  // Jade Emerald #10b981
             ],
-            lineRgb: '129, 140, 248',
-            lineAlphaMax: 0.14,
-            glowRgb: '129, 140, 248'
+            lineRgb: '6, 182, 212',            // Radiant Cyan
+            lineColor: '#06b6d4',
+            lineAlphaMax: 0.50,               // Opacity 0.40 - 0.60 per specification
+            glowRgb: '6, 182, 212'
         }
     };
 
     // --------------------------------------------------------------------------
-    // ⚙️ Fine-Tuned Default Configuration (Per Exact User Specifications)
+    // ⚙️ Fine-Tuned Default Configuration (Prominent Constellation Lines)
     // --------------------------------------------------------------------------
     const DEFAULT_CONFIG = {
         canvasId: 'stripe-particle-mesh-canvas',
@@ -70,16 +73,41 @@
         maxNudgeDistance: 20,           // Controlled 15px - 25px gentle displacement
         interactivityLerp: 0.08,        // Smooth lerp/easing responsive push
         nudgeDamping: 0.08,             // Damping factor for smooth return to equilibrium
-        connectionDistance: 100,        // Faint connecting lines proximity threshold
-        nodeDensityPer1000px: 28,       // Constellation density per 1000px height
-        minTotalNodes: 60,
-        maxTotalNodes: 180,
+        connectionDistance: 165,        // Prominent linking distance (150px - 180px spec)
+        maxDistance: 165,               // Direct alias for connection distance
+        lineWidth: 1.35,                // Thicker stroke width (1.2px - 1.5px spec)
+        lineOpacity: 0.54,              // Prominent connecting line opacity (0.4 - 0.6 spec)
+        line_linked: {                  // Particles.js / Canvas API standard compliance
+            enable: true,
+            distance: 165,
+            color: '#00f2fe',
+            opacity: 0.54,
+            width: 1.35
+        },
+        nodeDensityPer1000px: 30,       // Constellation density per 1000px height
+        minTotalNodes: 65,
+        maxTotalNodes: 190,
         parallaxFactor: 1.0             // 1:1 scroll synchronization with content
     };
 
     class TechNodeConstellation {
         constructor(userConfig = {}) {
             this.config = Object.assign({}, DEFAULT_CONFIG, userConfig);
+            if (userConfig && userConfig.line_linked) {
+                if (userConfig.line_linked.distance) {
+                    this.config.connectionDistance = userConfig.line_linked.distance;
+                    this.config.maxDistance = userConfig.line_linked.distance;
+                }
+                if (userConfig.line_linked.opacity) {
+                    this.config.lineOpacity = userConfig.line_linked.opacity;
+                }
+                if (userConfig.line_linked.width) {
+                    this.config.lineWidth = userConfig.line_linked.width;
+                }
+                if (userConfig.line_linked.color) {
+                    this.config.lineColor = userConfig.line_linked.color;
+                }
+            }
             this.canvas = null;
             this.ctx = null;
             this.width = 0;
@@ -467,15 +495,19 @@
             }
 
             const visibleCount = visibleNodes.length;
-            const maxConnDist = this.config.connectionDistance;
+            const maxConnDist = this.config.connectionDistance || this.config.maxDistance || 165;
             const maxConnDistSq = maxConnDist * maxConnDist;
+            const lineStrokeWidth = this.config.lineWidth || 1.35;
+            const baseLineAlpha = this.config.lineOpacity || palette.lineAlphaMax || 0.54;
 
             // ------------------------------------------------------------------
-            // A. Draw Subtle Constellation Connecting Lines
+            // A. Draw Prominent Glowing Constellation Connecting Lines
             // ------------------------------------------------------------------
-            ctx.lineWidth = 0.75;
+            ctx.lineWidth = lineStrokeWidth;
             for (let i = 0; i < visibleCount; i++) {
                 const p1 = visibleNodes[i];
+                const n1 = palette.nodes[p1.colorIndex % palette.nodes.length];
+
                 for (let j = i + 1; j < visibleCount; j++) {
                     const p2 = visibleNodes[j];
                     const dx = p1.screenX - p2.screenX;
@@ -484,12 +516,31 @@
 
                     if (distSq < maxConnDistSq) {
                         const dist = Math.sqrt(distSq);
-                        const alpha = (1 - dist / maxConnDist) * palette.lineAlphaMax;
-                        ctx.strokeStyle = `rgba(${palette.lineRgb}, ${alpha.toFixed(3)})`;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.screenX, p1.screenY);
-                        ctx.lineTo(p2.screenX, p2.screenY);
-                        ctx.stroke();
+                        // Proximity: 1.0 (touching) down to 0.0 (at boundary)
+                        const proximity = 1 - (dist / maxConnDist);
+                        // Calculate prominent glowing line opacity between 0.40 and 0.60
+                        // Using power curve so lines stay prominent across distances and taper smoothly to boundary
+                        const alpha = Math.max(0, Math.min(0.60, Math.pow(proximity, 0.70) * baseLineAlpha));
+
+                        if (alpha > 0.02) {
+                            const n2 = palette.nodes[p2.colorIndex % palette.nodes.length];
+
+                            // Vibrant Glowing Line Color Styling:
+                            // Matches the connected nodes' accent colors (cyan #00f2fe, purple #7f00ff, soft neon orange)
+                            if (p1.colorIndex === p2.colorIndex) {
+                                ctx.strokeStyle = `rgba(${n1.r}, ${n1.g}, ${n1.b}, ${alpha.toFixed(3)})`;
+                            } else {
+                                const grad = ctx.createLinearGradient(p1.screenX, p1.screenY, p2.screenX, p2.screenY);
+                                grad.addColorStop(0, `rgba(${n1.r}, ${n1.g}, ${n1.b}, ${alpha.toFixed(3)})`);
+                                grad.addColorStop(1, `rgba(${n2.r}, ${n2.g}, ${n2.b}, ${alpha.toFixed(3)})`);
+                                ctx.strokeStyle = grad;
+                            }
+
+                            ctx.beginPath();
+                            ctx.moveTo(p1.screenX, p1.screenY);
+                            ctx.lineTo(p2.screenX, p2.screenY);
+                            ctx.stroke();
+                        }
                     }
                 }
             }

@@ -195,21 +195,24 @@
             ctx.arc(cx, cy, 160, 0, Math.PI * 2);
             ctx.fill();
 
-            // Connect nearby nodes with glowing telemetry rays
+            // Connect nearby nodes with prominent glowing telemetry rays
+            ctx.lineWidth = 1.35;
             for (let i = 0; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
                     const dx = nodes[i].x - nodes[j].x;
                     const dy = nodes[i].y - nodes[j].y;
                     const d = Math.sqrt(dx * dx + dy * dy);
 
-                    if (d < 90) {
-                        const alpha = (1 - d / 90) * (dark ? 0.30 : 0.22);
-                        ctx.strokeStyle = dark ? `rgba(165, 180, 252, ${alpha})` : `rgba(79, 70, 229, ${alpha})`;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(nodes[i].x, nodes[i].y);
-                        ctx.lineTo(nodes[j].x, nodes[j].y);
-                        ctx.stroke();
+                    if (d < 165) {
+                        const proximity = 1 - d / 165;
+                        const alpha = Math.max(0, Math.min(0.60, Math.pow(proximity, 0.70) * (dark ? 0.54 : 0.48)));
+                        if (alpha > 0.02) {
+                            ctx.strokeStyle = dark ? `rgba(0, 242, 254, ${alpha.toFixed(3)})` : `rgba(6, 182, 212, ${alpha.toFixed(3)})`;
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.stroke();
+                        }
                     }
                 }
             }

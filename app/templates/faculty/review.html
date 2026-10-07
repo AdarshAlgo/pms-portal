@@ -56,17 +56,33 @@
                         </div>
                     </div>
 
-                    {% if submission.file_url %}
+                    {% set deliverable_doc = submission.submission_link or submission.document_url %}
+                    {% if deliverable_doc %}
                     <div class="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50">
                         <div class="flex items-center space-x-2.5">
-                            <i class="fab fa-github text-lg text-indigo-600 dark:text-indigo-400"></i>
+                            <i class="fab fa-google-drive text-lg text-amber-500"></i>
                             <div>
-                                <div class="font-bold text-slate-900 dark:text-white text-xs">External Deliverable / Repository</div>
-                                <div class="text-[11px] text-indigo-600 dark:text-indigo-400 truncate max-w-xs">{{ submission.file_url }}</div>
+                                <div class="font-bold text-slate-900 dark:text-white text-xs">{{ submission.link_title or 'Deliverable Cloud Document' }}</div>
+                                <div class="text-[11px] text-indigo-600 dark:text-indigo-400 truncate max-w-xs">{{ deliverable_doc }}</div>
                             </div>
                         </div>
-                        <a href="{{ submission.file_url }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center shadow-xs">
-                            Inspect Code <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
+                        <a href="{{ deliverable_doc }}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center shadow-xs">
+                            View Deliverable Document ↗
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if submission.repository_url %}
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+                        <div class="flex items-center space-x-2.5">
+                            <i class="fab fa-github text-lg text-slate-900 dark:text-white"></i>
+                            <div>
+                                <div class="font-bold text-slate-900 dark:text-white text-xs">Code Repository</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs">{{ submission.repository_url }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ submission.repository_url }}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors flex items-center shadow-xs">
+                            View Code Repository ↗
                         </a>
                     </div>
                     {% endif %}

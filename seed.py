@@ -16,6 +16,133 @@ from app.models.milestone import Milestone, Submission, MilestoneDeadlineOverrid
 from app.models.evaluation import RubricTemplate, RubricCriteria, EvaluationScore, GradeBoundary
 from app.models.feedback import FeedbackLog, MeetingLog, Notification, ActivityLog, AuditLog, SystemSetting
 
+def create_default_users(roles=None, depts=None):
+    """
+    Creates or updates the default initial production-grade accounts:
+    1. Admin Account:
+       - Name: System Administrator
+       - Username: admin_pms
+       - Email: admin@university.edu
+       - Password: Admin@PMS2026#Secure
+       - Role: admin
+    2. Faculty Guide Account:
+       - Name: Dr. Ankit Verma
+       - Username: dr_ankit_verma
+       - Email: dr.verma@university.edu
+       - Password: Faculty@Verma2026!
+       - Role: faculty
+    3. Lead Student Account:
+       - Name: Adarsh Katiyar
+       - Username: adarsh_lead
+       - Email: student1@university.edu
+       - Password: Student@Katiyar2026!
+       - Role: student
+    """
+    if roles is None:
+        roles = {r.role_name: r for r in Role.query.all()}
+    if depts is None:
+        depts = {d.code: d for d in Department.query.all()}
+
+    default_users_data = [
+        # (email, username, first_name, last_name, role_name, dept_code, enroll, perm_level, can_eval, can_sub, password)
+        (
+            'admin@university.edu',
+            'admin_pms',
+            'System',
+            'Administrator',
+            'admin',
+            'ADM',
+            None,
+            'full',
+            True,
+            True,
+            'Admin@PMS2026#Secure'
+        ),
+        (
+            'dr.verma@university.edu',
+            'dr_ankit_verma',
+            'Dr. Ankit',
+            'Verma',
+            'faculty',
+            'CSE',
+            None,
+            'full',
+            True,
+            False,
+            'Faculty@Verma2026!'
+        ),
+        (
+            'student1@university.edu',
+            'adarsh_lead',
+            'Adarsh',
+            'Katiyar',
+            'student',
+            'CSE',
+            'CSE2026001',
+            'standard',
+            False,
+            True,
+            'Student@Katiyar2026!'
+        ),
+    ]
+
+    users = {}
+    now = datetime.utcnow()
+    for email, username, fn, ln, rname, dept_code, enroll, perm_level, can_eval, can_sub, raw_pwd in default_users_data:
+        dept_obj = depts.get(dept_code)
+        dept_name = dept_obj.name if dept_obj else None
+        dept_id = dept_obj.id if dept_obj else None
+        role_obj = roles.get(rname)
+        role_id = role_obj.id if role_obj else 1
+
+        # Check existing user by email OR username to safely update in place
+        user = User.query.filter(
+            db.or_(User.email == email, User.username == username)
+        ).first()
+
+        if not user:
+            user = User(
+                username=username,
+                email=email,
+                first_name=fn,
+                last_name=ln,
+                role_id=role_id,
+                department=dept_name,
+                department_id=dept_id,
+                enrollment_number=enroll,
+                is_active=True,
+                is_verified=True,
+                status='active',
+                permission_level=perm_level,
+                can_evaluate=can_eval,
+                can_submit=can_sub,
+                last_seen_at=now - timedelta(minutes=5)
+            )
+            user.set_password(raw_pwd)
+            db.session.add(user)
+            db.session.flush()
+        else:
+            user.username = username
+            user.email = email
+            user.first_name = fn
+            user.last_name = ln
+            user.role_id = role_id
+            user.department = dept_name
+            user.department_id = dept_id
+            user.enrollment_number = enroll
+            user.is_active = True
+            user.is_verified = True
+            user.status = 'active'
+            user.permission_level = perm_level
+            user.can_evaluate = can_eval
+            user.can_submit = can_sub
+            user.set_password(raw_pwd)
+            db.session.flush()
+
+        users[email] = user
+
+    return users
+
 def seed_database(reset=True):
     app = create_app('development')
     with app.app_context():
@@ -24,6 +151,7 @@ def seed_database(reset=True):
             db.drop_all()
         print("Creating all database tables...")
         db.create_all()
+        now = datetime.utcnow()
 
         # ---------------------------------------------------------
         # 1. ROLES
@@ -46,6 +174,7 @@ def seed_database(reset=True):
         # 2. DEPARTMENTS
         # ---------------------------------------------------------
         depts_data = [
+            ('Master of Computer Applications (MCA)', 'MCA'),
             ('Computer Science & Engineering', 'CSE'),
             ('Information Technology', 'IT'),
             ('Electronics & Robotics', 'ECE'),
@@ -58,54 +187,19 @@ def seed_database(reset=True):
                 dept = Department(name=name, code=code)
                 db.session.add(dept)
                 db.session.flush()
+            else:
+                dept.name = name
+                db.session.flush()
             depts[code] = dept
 
         # ---------------------------------------------------------
-        # 3. USERS (ADMIN, FACULTY: DR. ANKIT VERMA, STUDENT: ADARSH KATIYAR) - PASSWORD: 'password123'
+        # 3. USERS (ADMIN, FACULTY, STUDENT) WITH SECURE PRODUCTION PASSWORDS
         # ---------------------------------------------------------
-        users_data = [
-            # Admin (Admin 1 named 'Admin')
-            ('admin@university.edu', 'Admin', '', 'admin', 'Academic Administration', None, 'full', True, True),
-            
-            # Faculty / Guide (Single Faculty: Dr. Ankit Verma)
-            ('dr.verma@university.edu', 'Dr. Ankit', 'Verma', 'faculty', 'Computer Science & Engineering', None, 'full', True, False),
-            
-            # Student / Scholar (Single Student: Adarsh Katiyar)
-            ('student1@university.edu', 'Adarsh', 'Katiyar', 'student', 'Computer Science & Engineering', 'CSE2026001', 'standard', False, True),
-        ]
-
-        users = {}
-        now = datetime.utcnow()
-        for email, fn, ln, rname, dept_name, enroll, perm_level, can_eval, can_sub in users_data:
-            user = User.query.filter_by(email=email).first()
-            if not user:
-                user = User(
-                    username=email.split('@')[0],
-                    email=email,
-                    first_name=fn,
-                    last_name=ln,
-                    role_id=roles[rname].id,
-                    department=dept_name,
-                    enrollment_number=enroll,
-                    is_active=True,
-                    is_verified=True,
-                    status='active',
-                    permission_level=perm_level,
-                    can_evaluate=can_eval,
-                    can_submit=can_sub,
-                    last_seen_at=now - timedelta(minutes=5)
-                )
-                user.set_password('password123')
-                db.session.add(user)
-                db.session.flush()
-            else:
-                user.is_verified = True
-                user.status = user.status or 'active'
-                if not getattr(user, 'username', None):
-                    user.username = email.split('@')[0]
-            users[email] = user
+        users = create_default_users(roles, depts)
 
         # Assign Department Heads (All departments mentored under Dr. Ankit Verma)
+        if 'MCA' in depts:
+            depts['MCA'].head_of_department_id = users['dr.verma@university.edu'].id
         depts['CSE'].head_of_department_id = users['dr.verma@university.edu'].id
         depts['IT'].head_of_department_id = users['dr.verma@university.edu'].id
         depts['ECE'].head_of_department_id = users['dr.verma@university.edu'].id
@@ -328,6 +422,7 @@ def seed_database(reset=True):
                         milestone_id=ms.id,
                         submitted_by=pdata['lead'].id,
                         submission_text=f"Formal deliverable submission for {ms.title}. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.",
+                        submission_link=f"https://drive.google.com/institutional-repo/{pdata['team_name'].lower().replace(' ', '-')}/m{ms.milestone_order}-report.pdf",
                         document_url=f"https://drive.google.com/institutional-repo/{pdata['team_name'].lower().replace(' ', '-')}/m{ms.milestone_order}-report.pdf",
                         repository_url=f"https://github.com/academic-projects-2026/{pdata['team_name'].lower().replace(' ', '-')}",
                         status='approved',
@@ -371,6 +466,7 @@ def seed_database(reset=True):
                         milestone_id=next_ms.id,
                         submitted_by=pdata['lead'].id,
                         submission_text=f"Draft deliverables for {next_ms.title} uploaded for faculty review and evaluation.",
+                        submission_link=f"https://drive.google.com/institutional-repo/{pdata['team_name'].lower().replace(' ', '-')}/draft-report.pdf",
                         document_url=f"https://drive.google.com/institutional-repo/{pdata['team_name'].lower().replace(' ', '-')}/draft-report.pdf",
                         repository_url=f"https://github.com/academic-projects-2026/{pdata['team_name'].lower().replace(' ', '-')}/tree/dev",
                         status=sub_status,
@@ -418,8 +514,10 @@ def seed_database(reset=True):
             ('F', 0.0, 'Unsatisfactory / Fail', 6)
         ]
         for letter, min_pct, desc, order in boundaries_data:
-            gb = GradeBoundary(grade_letter=letter, min_percentage=min_pct, description=desc, display_order=order)
-            db.session.add(gb)
+            gb = GradeBoundary.query.filter_by(grade_letter=letter).first()
+            if not gb:
+                gb = GradeBoundary(grade_letter=letter, min_percentage=min_pct, description=desc, display_order=order)
+                db.session.add(gb)
 
         SystemSetting.set('MAX_FILE_SIZE_MB', '32', 'Maximum upload file size in megabytes')
         SystemSetting.set('ALLOWED_EXTENSIONS', 'pdf,zip,docx,pptx', 'Allowed file upload extensions')

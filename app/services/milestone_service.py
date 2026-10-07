@@ -39,7 +39,7 @@ def get_project_milestones(project_id):
         })
     return result
 
-def create_submission(project_id, milestone_id, user_id, text=None, doc_url=None, repo_url=None):
+def create_submission(project_id, milestone_id, user_id, text=None, doc_url=None, repo_url=None, submission_link=None, link_title=None, notes=None):
     """Creates a new submission or updates existing one to submitted."""
     submission = Submission.query.filter_by(project_id=project_id, milestone_id=milestone_id).first()
     
@@ -51,8 +51,12 @@ def create_submission(project_id, milestone_id, user_id, text=None, doc_url=None
         )
         db.session.add(submission)
         
+    primary_link = submission_link or doc_url
     submission.submission_text = text
-    submission.document_url = doc_url
+    submission.submission_link = primary_link
+    submission.document_url = primary_link
+    submission.link_title = link_title
+    submission.notes = notes
     submission.repository_url = repo_url
     submission.status = 'submitted'
     submission.submitted_at = datetime.utcnow()

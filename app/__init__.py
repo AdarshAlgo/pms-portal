@@ -116,4 +116,19 @@ def create_app(config_name='development'):
             )
         return dict(is_admin=False, is_faculty=False, is_student=False)
 
+    # Ensure MCA department exists in the database
+    with app.app_context():
+        try:
+            from app.models.project import Department
+            mca = Department.query.filter_by(code='MCA').first()
+            if not mca:
+                mca = Department(name='Master of Computer Applications (MCA)', code='MCA')
+                db.session.add(mca)
+                db.session.commit()
+            elif mca.name != 'Master of Computer Applications (MCA)':
+                mca.name = 'Master of Computer Applications (MCA)'
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
     return app

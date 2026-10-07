@@ -44,14 +44,15 @@
                 </div>
                 
                 <div class="flex flex-wrap gap-3">
-                    {% if submission.document_url %}
-                    <a href="{{ submission.document_url }}" target="_blank" class="btn-shimmer inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-bold rounded-xl text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
-                        <i class="fas fa-file-pdf text-rose-500 mr-2"></i> View Report Document
+                    {% set deliverable_doc = submission.submission_link or submission.document_url %}
+                    {% if deliverable_doc %}
+                    <a href="{{ deliverable_doc }}" target="_blank" rel="noopener noreferrer" class="btn-shimmer inline-flex items-center px-4 py-2.5 border border-indigo-200 dark:border-indigo-700 shadow-sm text-xs font-bold rounded-xl text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 transition-all">
+                        <i class="fab fa-google-drive text-amber-500 mr-2 text-sm"></i> View Deliverable Document ↗
                     </a>
                     {% endif %}
                     {% if submission.repository_url %}
-                    <a href="{{ submission.repository_url }}" target="_blank" class="btn-shimmer inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-bold rounded-xl text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
-                        <i class="fab fa-github text-slate-900 dark:text-white mr-2"></i> View Code Repository
+                    <a href="{{ submission.repository_url }}" target="_blank" rel="noopener noreferrer" class="btn-shimmer inline-flex items-center px-4 py-2.5 border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-bold rounded-xl text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                        <i class="fab fa-github text-slate-900 dark:text-white mr-2"></i> View Code Repository ↗
                     </a>
                     {% endif %}
                 </div>

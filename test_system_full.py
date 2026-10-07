@@ -64,7 +64,7 @@ def run_full_system_verification():
     log_test("SECURITY", "Unauthenticated Student Access", res.status_code in [302, 401], f"Redirected to login (Status {res.status_code})")
 
     # Cross-role access: Student trying to access Admin and Faculty dashboards
-    client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'password123'}, follow_redirects=True)
+    client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'Student@Katiyar2026!'}, follow_redirects=True)
     res_forbidden_admin = client.get('/admin/dashboard')
     log_test("SECURITY", "Student -> /admin/dashboard (RBAC)", res_forbidden_admin.status_code == 403, f"Blocked with 403 Forbidden")
     
@@ -73,7 +73,7 @@ def run_full_system_verification():
     client.get('/auth/logout')
 
     # Faculty trying to access Admin dashboard
-    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'password123'}, follow_redirects=True)
+    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'Faculty@Verma2026!'}, follow_redirects=True)
     res_fac_admin = client.get('/admin/dashboard')
     log_test("SECURITY", "Faculty -> /admin/dashboard (RBAC)", res_fac_admin.status_code == 403, f"Blocked with 403 Forbidden")
     client.get('/auth/logout')
@@ -81,7 +81,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------
     # 3. ADMIN JOURNEY VERIFICATION
     # -------------------------------------------------------------
-    res_admin_login = client.post('/auth/login', data={'email': 'admin@university.edu', 'password': 'password123'}, follow_redirects=True)
+    res_admin_login = client.post('/auth/login', data={'email': 'admin@university.edu', 'password': 'Admin@PMS2026#Secure'}, follow_redirects=True)
     log_test("AUTH", "Admin Login (admin@university.edu)", res_admin_login.status_code == 200, "Authenticated successfully")
 
     res_admin_dash = client.get('/admin/dashboard')
@@ -92,7 +92,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------
     # 4. STUDENT JOURNEY & MILESTONE SUBMISSION
     # -------------------------------------------------------------
-    res_student_login = client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'password123'}, follow_redirects=True)
+    res_student_login = client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'Student@Katiyar2026!'}, follow_redirects=True)
     log_test("AUTH", "Student Login (student1@university.edu)", res_student_login.status_code == 200, "Authenticated successfully")
 
     res_stu_dash = client.get('/student/dashboard')
@@ -128,7 +128,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------
     # 5. FACULTY JOURNEY & RUBRIC EVALUATION
     # -------------------------------------------------------------
-    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'password123'}, follow_redirects=True)
+    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'Faculty@Verma2026!'}, follow_redirects=True)
     res_fac_dash = client.get('/faculty/dashboard')
     has_teams = b'Agrotech' in res_fac_dash.data or b'Innovators' in res_fac_dash.data
     log_test("FACULTY", "Faculty Dashboard Teams View", res_fac_dash.status_code == 200 and has_teams, "Shows assigned team 'Agrotech Innovators'")
@@ -195,7 +195,7 @@ def run_full_system_verification():
     # -------------------------------------------------------------
     # 6. VERIFY STUDENT DASHBOARD & PROGRESS UPDATE
     # -------------------------------------------------------------
-    client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'password123'}, follow_redirects=True)
+    client.post('/auth/login', data={'email': 'student1@university.edu', 'password': 'Student@Katiyar2026!'}, follow_redirects=True)
     res_student_dash2 = client.get('/student/dashboard')
     log_test("STUDENT", "Updated Dashboard Load", res_student_dash2.status_code == 200, "Dashboard re-rendered with updated progress")
 
@@ -256,7 +256,7 @@ def run_full_system_verification():
 
     # 9d. Switch to Admin and test Admin AI capabilities
     client.post('/auth/logout')
-    client.post('/auth/login', data={'email': 'admin@university.edu', 'password': 'password123'})
+    client.post('/auth/login', data={'email': 'admin@university.edu', 'password': 'Admin@PMS2026#Secure'})
     
     res_admin_actions = client.get('/api/agent/actions')
     admin_actions_data = res_admin_actions.get_json()
@@ -344,7 +344,7 @@ def run_full_system_verification():
 
     # 10l. Faculty Portal Endpoints
     client.post('/auth/logout')
-    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'password123'})
+    client.post('/auth/login', data={'email': 'dr.verma@university.edu', 'password': 'Faculty@Verma2026!'})
 
     for fac_url, fac_name in [
         ('/faculty/my-teams', 'Faculty My Teams'),
@@ -370,12 +370,12 @@ def run_full_system_verification():
             is_active=True,
             can_submit=True
         )
-        new_scholar.set_password('password123')
+        new_scholar.set_password('Scholar@Priya2026!')
         db.session.add(new_scholar)
         db.session.commit()
 
     client.post('/auth/logout')
-    client.post('/auth/login', data={'email': 'scholar.priya@university.edu', 'password': 'password123'})
+    client.post('/auth/login', data={'email': 'scholar.priya@university.edu', 'password': 'Scholar@Priya2026!'})
 
     res_reg_view = client.get('/student/project/register')
     log_test("STUDENT", "Dynamic Project Registration View", res_reg_view.status_code == 200 and b'Register Capstone Project' in res_reg_view.data, "Rendered multi-member form and mentor selection")
@@ -404,18 +404,24 @@ def run_full_system_verification():
         log_test("STUDENT", "Dynamic Multi-Member Registration", res_reg_submit.status_code == 200 and team_created,
                  f"Team '{new_team.team_name if new_team else 'None'}' created with {len(new_team.members) if new_team else 0} members")
 
-    # 10n. Student Milestone Submission with File Attachment
-    upload_file_data = {
+    # 10n. Student Milestone Cloud Deliverable Link Submission (Google Drive / GitHub Docs)
+    cloud_link_data = {
         'submission_text': 'Completed Milestone 1 sprint requirements including architecture diagram and sensor interface specs.',
         'repository_url': 'https://github.com/university/swarm-drone-slam',
-        'file_attachment': (io.BytesIO(b'%PDF-1.4 Mock Deliverable PDF Document Binary Content'), 'deliverable_report.pdf')
+        'submission_link': 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OIvE2upWE/view?usp=sharing',
+        'link_title': 'Swarm Drone Edge SLAM Architecture Specification v1.0',
+        'notes': 'Public Google Drive link configured with Anyone with the link can view permissions.'
     }
-    res_file_sub = client.post('/student/submit/1', data=upload_file_data, content_type='multipart/form-data', follow_redirects=True)
+    res_file_sub = client.post('/student/submit/1', data=cloud_link_data, follow_redirects=True)
     with app.app_context():
         uploaded_sub = Submission.query.filter_by(project_id=new_team.project.id, milestone_id=1).first() if new_team else None
-        file_saved = uploaded_sub is not None and bool(uploaded_sub.document_url) and uploaded_sub.document_url.startswith('/static/uploads/submissions/') and uploaded_sub.document_url.endswith('.pdf')
-        log_test("STUDENT", "Milestone Multipart File Attachment Upload", res_file_sub.status_code == 200 and file_saved,
-                 f"Submission saved with attachment URL: {uploaded_sub.document_url if uploaded_sub else 'None'}")
+        cloud_link_saved = (
+            uploaded_sub is not None and
+            uploaded_sub.submission_link == 'https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OIvE2upWE/view?usp=sharing' and
+            uploaded_sub.link_title == 'Swarm Drone Edge SLAM Architecture Specification v1.0'
+        )
+        log_test("STUDENT", "Milestone Cloud Deliverable Link Submission", res_file_sub.status_code == 200 and cloud_link_saved,
+                 f"Submission saved with Google Drive link: {uploaded_sub.submission_link if uploaded_sub else 'None'}")
 
     print("\n" + "="*80)
     print("                     📊 FINAL TEST RESULTS SUMMARY")

@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db, bcrypt, login_manager
 
 class Role(db.Model):
@@ -11,24 +12,41 @@ class Role(db.Model):
     
     users = db.relationship('User', backref='role', lazy=True)
 
+    def __repr__(self):
+        return f'<Role {self.role_name}>'
+
+    def __str__(self):
+        return self.role_name
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.role_name.lower() == other.lower()
+        if isinstance(other, Role):
+            return self.id == other.id
+        return False
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, index=True, nullable=False)
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
     department = db.Column(db.String(100))
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
+    department_rel = db.relationship('Department', foreign_keys=[department_id], backref='affiliated_users')
     enrollment_number = db.Column(db.String(50), unique=True)
-    is_verified = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=True)
     is_active = db.Column(db.Boolean, default=True)
 
     def __init__(self, **kwargs):
         if 'username' not in kwargs or not kwargs['username']:
             if 'email' in kwargs and kwargs['email']:
                 kwargs['username'] = kwargs['email'].split('@')[0]
+        if 'is_verified' not in kwargs:
+            kwargs['is_verified'] = True
         super().__init__(**kwargs)
 
     # User Governance & Security Lifecycle States: 'active', 'inactive', 'suspended', 'blacklisted'
@@ -59,12 +77,20 @@ class User(UserMixin, db.Model):
         return self.status == 'suspended'
 
     def set_password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
 
     def check_password(self, password):
         if not self.password_hash:
             return False
-        return bcrypt.check_password_hash(self.password_hash, password)
+        try:
+            if check_password_hash(self.password_hash, password):
+                return True
+        except Exception:
+            pass
+        try:
+            return bcrypt.check_password_hash(self.password_hash, password)
+        except Exception:
+            return False
 
     @property
     def has_password(self):
@@ -93,17 +119,6 @@ class User(UserMixin, db.Model):
         if not self.last_seen_at:
             return False
         return (datetime.utcnow() - self.last_seen_at).total_seconds() < 900  # 15 minutes
-
-
-class EmailVerification(db.Model):
-    __tablename__ = 'email_verifications'
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), index=True, nullable=False)
-    otp_hash = db.Column(db.String(255), nullable=False)
-    expires_at = db.Column(db.DateTime, nullable=False)
-    attempts = db.Column(db.Integer, default=0)
-    is_used = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 @login_manager.user_loader

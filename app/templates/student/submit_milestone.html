@@ -62,7 +62,30 @@
                               placeholder="Provide a comprehensive technical overview of work completed for this milestone, including architecture decisions, algorithmic benchmarks, and test coverage...">{{ existing.submission_text if existing else '' }}</textarea>
                 </div>
 
-                <!-- URLs: Git Repository & External Cloud Docs -->
+                <!-- Primary Deliverable: Cloud Document Link (Google Drive / GitHub Docs) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="submission_link" class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                            Google Drive / Public Document Link <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[11px] text-slate-400 font-medium">Cloud Deliverable</span>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fab fa-google-drive text-amber-500 text-sm"></i>
+                        </span>
+                        <input type="url" name="submission_link" id="submission_link" required
+                               value="{{ existing.submission_link if (existing and existing.submission_link) else (existing.document_url if existing else '') }}"
+                               class="pl-10 w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-3 px-3.5 text-xs font-medium"
+                               placeholder="https://drive.google.com/file/d/.../view?usp=sharing">
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center">
+                        <i class="fas fa-info-circle mr-1.5 text-indigo-500"></i>
+                        Please ensure link sharing permissions are set to <strong class="text-slate-700 dark:text-slate-200 ml-1 font-semibold">'Anyone with the link can view'</strong>.
+                    </p>
+                </div>
+
+                <!-- Secondary Deliverables: Git Repository & Document Title -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
@@ -80,44 +103,22 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-                            Cloud Document URL (Google Drive / Overleaf)
+                            Deliverable Title / Version <span class="text-slate-400 font-normal lowercase">(optional)</span>
                         </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-link text-xs"></i>
-                            </span>
-                            <input type="url" name="document_url" value="{{ existing.document_url if existing else '' }}"
-                                   class="pl-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs"
-                                   placeholder="https://docs.google.com/document/d/...">
-                        </div>
+                        <input type="text" name="link_title" value="{{ existing.link_title if existing else '' }}"
+                               class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs"
+                               placeholder="e.g. Design Specification Report v2.0">
                     </div>
                 </div>
 
-                <!-- Interactive File Upload Drag-and-Drop Area -->
+                <!-- Optional Evaluator Notes -->
                 <div>
                     <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-                        Deliverable File Attachment (PDF, ZIP, DOCX - Max 32MB)
+                        Additional Notes for Evaluator <span class="text-slate-400 font-normal lowercase">(optional)</span>
                     </label>
-                    <div id="dropzoneArea"
-                         onclick="document.getElementById('file_attachment').click()"
-                         class="mt-1 flex flex-col items-center justify-center px-6 pt-7 pb-7 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-3xl hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition-all cursor-pointer">
-                        <input type="file" id="file_attachment" name="file_attachment" accept=".pdf,.zip,.docx,.pptx" class="hidden" onchange="displaySelectedFileName(this)">
-                        <div class="space-y-2 text-center">
-                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mx-auto shadow-inner">
-                                <i class="fas fa-cloud-arrow-up"></i>
-                            </div>
-                            <div class="text-xs text-slate-600 dark:text-slate-300 font-semibold">
-                                <span class="text-indigo-600 dark:text-indigo-400 font-bold">Click to browse file</span> or drag &amp; drop
-                            </div>
-                            <p class="text-[11px] text-slate-400" id="fileChosenText">
-                                {% if existing and existing.document_url and existing.document_url.startswith('/static/uploads/') %}
-                                    Current attached file: <strong class="text-indigo-600">{{ existing.document_url.split('/')[-1] }}</strong>
-                                {% else %}
-                                    Supported: PDF, ZIP (source code archive), DOCX, PPTX (up to 32MB)
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
+                    <input type="text" name="notes" value="{{ existing.notes if existing else '' }}"
+                           class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs"
+                           placeholder="e.g. Section 3 contains updated performance benchmarks and latency test graphs">
                 </div>
             </div>
 
@@ -178,15 +179,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function displaySelectedFileName(input) {
-    const textElem = document.getElementById('fileChosenText');
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-        textElem.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fas fa-check-circle mr-1"></i> Selected: ${file.name} (${sizeMb} MB)</span>`;
-    }
-}
-</script>
 {% endblock %}

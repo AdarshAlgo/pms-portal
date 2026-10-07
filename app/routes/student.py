@@ -133,7 +133,7 @@ def register_project():
         return redirect(url_for('student.dashboard'))
 
     faculties = User.query.join(Role).filter(Role.role_name == 'faculty', User.is_active == True).all()  # noqa: E712
-    departments = Department.query.all()
+    departments = Department.get_ordered()
     current_term = AcademicTerm.query.filter_by(is_current=True).first() or AcademicTerm.query.first()
 
     if request.method == 'POST':
@@ -394,19 +394,32 @@ def submit_milestone(milestone_id: int):
     if request.method == 'POST':
         submission_text = request.form.get('submission_text', '').strip()
         repository_url = request.form.get('repository_url', '').strip() or request.form.get('github_url', '').strip()
-        document_url = request.form.get('document_url', '').strip()
+        submission_link = request.form.get('submission_link', '').strip() or request.form.get('document_url', '').strip()
+        link_title = request.form.get('link_title', '').strip()
+        notes = request.form.get('notes', '').strip()
 
-        # Handle Drag-and-Drop or direct File Attachment
+        # Handle file attachment if provided (backwards compatibility)
         uploaded_file = request.files.get('file_attachment')
-        if uploaded_file and uploaded_file.filename:
+        if uploaded_file and uploaded_file.filename and not submission_link:
             file_url = save_uploaded_file(uploaded_file, subfolder='submissions')
             if file_url:
-                document_url = file_url
+                submission_link = file_url
             else:
                 flash('Uploaded file type not permitted. Allowed: PDF, ZIP, DOCX, PPTX.', 'warning')
 
-        if not submission_text and not repository_url and not document_url:
-            flash('Please provide sprint description, a repository URL, or upload a project report.', 'error')
+        # Backend URL Validation: Must start with http:// or https:// (or internal /static/ url)
+        if submission_link and not (submission_link.startswith('http://') or submission_link.startswith('https://') or submission_link.startswith('/static/')):
+            flash('Invalid document link. Please provide a valid URL starting with http:// or https:// (e.g., Google Drive, GitHub Docs, or OneDrive).', 'error')
+            return render_template(
+                'student/submit_milestone.html',
+                milestone=milestone,
+                existing=existing,
+                project=project,
+                effective_deadline=effective_deadline
+            )
+
+        if not submission_text and not repository_url and not submission_link:
+            flash('Please provide sprint description and a Google Drive / Cloud Deliverable link.', 'error')
             return render_template(
                 'student/submit_milestone.html',
                 milestone=milestone,
@@ -423,7 +436,10 @@ def submit_milestone(milestone_id: int):
         if existing:
             # Resubmission / Update
             existing.submission_text = submission_text or existing.submission_text
-            existing.document_url = document_url or existing.document_url
+            existing.submission_link = submission_link or existing.submission_link
+            existing.document_url = submission_link or existing.document_url
+            existing.link_title = link_title or existing.link_title
+            existing.notes = notes or existing.notes
             existing.repository_url = repository_url or existing.repository_url
             existing.status = 'submitted'
             existing.is_late = is_late
@@ -439,8 +455,11 @@ def submit_milestone(milestone_id: int):
                 milestone_id=milestone_id,
                 user_id=current_user.id,
                 text=submission_text,
-                doc_url=document_url,
-                repo_url=repository_url
+                doc_url=submission_link,
+                repo_url=repository_url,
+                submission_link=submission_link,
+                link_title=link_title,
+                notes=notes
             )
             submission_record.is_late = is_late
             submission_record.version = 1
@@ -474,7 +493,8 @@ def submit_milestone(milestone_id: int):
                 'project_id': project.id,
                 'version': submission_record.version,
                 'is_late': is_late,
-                'has_file': bool(document_url),
+                'has_cloud_link': bool(submission_link),
+                'submission_link': submission_link,
                 'new_progress': new_progress
             }
         )

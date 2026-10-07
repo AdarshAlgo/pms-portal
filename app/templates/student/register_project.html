@@ -77,7 +77,7 @@
                             <select id="department_id" name="department_id" required
                                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-medium">
                                 {% for dept in departments %}
-                                <option value="{{ dept.id }}">{{ dept.name }} ({{ dept.code }})</option>
+                                <option value="{{ dept.id }}">{% if '(' in dept.name %}{{ dept.name }}{% else %}{{ dept.name }} ({{ dept.code }}){% endif %}</option>
                                 {% endfor %}
                             </select>
                         </div>

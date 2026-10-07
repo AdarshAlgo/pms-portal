@@ -3,19 +3,20 @@
 {% block title %}Sign In - Project Progress Monitoring System{% endblock %}
 
 {% block auth_content %}
-<div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-transparent transition-colors duration-300 w-full flex-1">
+<div class="min-h-screen py-12 px-4 flex flex-col justify-center items-center overflow-y-auto relative bg-transparent transition-colors duration-300 w-full flex-1">
     
     <!-- Central Soft Ambient Light -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-indigo-600/15 via-purple-600/15 to-emerald-500/10 blur-[130px] rounded-full pointer-events-none -z-10"></div>
 
-    <div class="max-w-lg w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 backdrop-blur-2xl relative z-10 animate-fade-in-up">
+    <div class="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 backdrop-blur-2xl relative z-10 animate-fade-in-up my-auto">
         
         <!-- Glowing Top Rim Line -->
         <div id="login-accent-line" class="h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-400 w-full"></div>
 
         <!-- Header -->
-        <div class="p-8 pb-5 text-center border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-            <div class="flex items-center justify-between mb-4">
+        <div class="p-6 sm:p-7 pb-5 text-center border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+            <!-- Safe clearance top bar with Back to Homepage and Badge -->
+            <div class="flex items-center justify-between mb-4 pt-1">
                 <a href="{{ url_for('index') }}" class="inline-flex items-center text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                     <i class="fas fa-arrow-left mr-1.5"></i> Back to Homepage
                 </a>
@@ -32,7 +33,7 @@
                 Institutional Portal Sign In
             </h2>
             <p id="login-portal-subtitle" class="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
-                Select your role below or enter credentials to access your dashboard
+                Enter your credentials to access your dashboard
             </p>
 
             <!-- 3 Role Switcher Tabs -->
@@ -50,7 +51,7 @@
         </div>
 
         <!-- Form Body -->
-        <div class="p-8 pt-6">
+        <div class="p-6 sm:p-7 pt-5 sm:pt-6">
             <form id="login-form" action="{{ url_for('auth.login', role=target_role) }}" method="POST" class="space-y-4">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
                 <input type="hidden" name="selected_role" id="selected-role-input" value="{{ target_role or 'faculty' }}">
@@ -65,28 +66,25 @@
                             <i class="fas fa-user-circle text-sm"></i>
                         </div>
                         <input type="text" name="username" id="email" 
-                               value="{% if target_role == 'admin' %}admin@university.edu{% elif target_role == 'student' %}student1@university.edu{% else %}dr.verma@university.edu{% endif %}"
+                               value="{{ request.form.get('username') or '' }}"
                                class="pl-10 w-full rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 transition-all shadow-xs" 
-                               placeholder="username or email@university.edu" required autocomplete="username">
+                               placeholder="Enter your username or email" required autocomplete="username">
                     </div>
                 </div>
                 
                 <!-- Password Field with Visibility Toggle -->
                 <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label for="password" class="block text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider">
-                            Password
-                        </label>
-                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Demo: <strong class="text-indigo-600 dark:text-indigo-400 font-mono">password123</strong></span>
-                    </div>
+                    <label for="password" class="block text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                        Password
+                    </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                             <i class="fas fa-lock text-sm"></i>
                         </div>
                         <input type="password" name="password" id="password" 
-                               value="password123"
+                               value=""
                                class="pl-10 pr-10 w-full rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 transition-all shadow-xs" 
-                               placeholder="••••••••" required autocomplete="current-password">
+                               placeholder="••••••••••••" required autocomplete="current-password">
                         <button type="button" onclick="togglePasswordVisibility('password', 'password-toggle-icon')" 
                                 class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus:outline-none"
                                 title="Toggle password visibility">
@@ -102,63 +100,16 @@
                                class="w-4 h-4 rounded text-indigo-600 bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:ring-indigo-500 focus:ring-offset-0 transition-colors">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Remember me</span>
                     </label>
-                    <span class="text-slate-400 text-[11px] font-mono">SHA256 • Bcrypt</span>
+                    <span class="text-slate-400 text-[11px] font-mono">PBKDF2 &bull; SHA256</span>
                 </div>
 
-                <!-- Modern Sign In Button with Smooth Hover State -->
+                <!-- Primary CTA Button -->
                 <button type="submit" id="login-submit-btn" class="btn-shimmer w-full flex items-center justify-center py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/25 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 active:scale-[0.99] transition-all border border-indigo-400/30 mt-3">
-                    <span>Sign In to Portal</span>
-                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    <span>Sign In to Portal &rarr;</span>
                 </button>
             </form>
 
-            <!-- 1-Click Instant Demo Login (Full Width, High Contrast) -->
-            <div class="mt-7 pt-5 border-t border-slate-200 dark:border-slate-800">
-                <p class="text-[11px] font-extrabold text-slate-600 dark:text-slate-400 uppercase tracking-wider text-center mb-3">
-                    ⚡ 1-Click Instant Demo Portals
-                </p>
-                <div class="space-y-2 text-xs">
-                    <!-- Admin Quick Login -->
-                    <a href="{{ url_for('auth.quick_login', role='admin') }}" 
-                       class="p-2.5 px-3.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 dark:border-purple-500/30 text-purple-900 dark:text-purple-200 font-bold transition-all shadow-xs flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-purple-200/70 dark:bg-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center justify-center text-xs">👑</span>
-                            <div>
-                                <div class="font-extrabold text-slate-900 dark:text-white">Admin (Governance Portal)</div>
-                                <div class="text-[10px] text-purple-700 dark:text-purple-300 font-normal font-mono">admin@university.edu</div>
-                            </div>
-                        </div>
-                        <span class="text-xs text-purple-600 dark:text-purple-400 font-bold group-hover:translate-x-0.5 transition-transform">Enter &rarr;</span>
-                    </a>
-
-                    <!-- Faculty Quick Login -->
-                    <a href="{{ url_for('auth.quick_login', role='faculty') }}" 
-                       class="p-2.5 px-3.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:border-indigo-500/30 text-indigo-900 dark:text-indigo-200 font-bold transition-all shadow-xs flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-indigo-200/70 dark:bg-indigo-800/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs">👨‍🏫</span>
-                            <div>
-                                <div class="font-extrabold text-slate-900 dark:text-white">Dr. Ankit Verma (Faculty Guide)</div>
-                                <div class="text-[10px] text-indigo-700 dark:text-indigo-300 font-normal font-mono">dr.verma@university.edu</div>
-                            </div>
-                        </div>
-                        <span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold group-hover:translate-x-0.5 transition-transform">Enter &rarr;</span>
-                    </a>
-
-                    <!-- Student Quick Login -->
-                    <a href="{{ url_for('auth.quick_login', role='student') }}" 
-                       class="p-2.5 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:border-emerald-500/30 text-emerald-900 dark:text-emerald-200 font-bold transition-all shadow-xs flex items-center justify-between group">
-                        <div class="flex items-center space-x-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-emerald-200/70 dark:bg-emerald-800/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-xs">🎓</span>
-                            <div>
-                                <div class="font-extrabold text-slate-900 dark:text-white">Adarsh Katiyar (Lead Scholar)</div>
-                                <div class="text-[10px] text-emerald-700 dark:text-emerald-300 font-normal font-mono">student1@university.edu</div>
-                            </div>
-                        </div>
-                        <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold group-hover:translate-x-0.5 transition-transform">Enter &rarr;</span>
-                    </a>
-                </div>
-            </div>
-
+            <!-- Bottom Navigation -->
             <div class="text-center mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
                     Need a new account? 
@@ -188,7 +139,6 @@ function togglePasswordVisibility(inputId, iconId) {
 function selectRole(role) {
     const roles = {
         'admin': {
-            email: 'admin@university.edu',
             title: 'Admin Governance Portal Sign In',
             subtitle: 'Institutional Master Governance & Rubrics Matrix',
             icon: 'fas fa-user-shield text-2xl',
@@ -198,9 +148,8 @@ function selectRole(role) {
             actionUrl: "{{ url_for('auth.login', role='admin') }}"
         },
         'faculty': {
-            email: 'dr.verma@university.edu',
             title: 'Faculty Mentorship Portal Sign In',
-            subtitle: 'Dr. Ankit Verma • Capstone Projects Guide & Evaluator',
+            subtitle: 'Faculty Guide & Evaluator Portal',
             icon: 'fas fa-chalkboard-teacher text-2xl',
             iconBox: 'bg-indigo-100 dark:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/40 text-indigo-600 dark:text-indigo-400',
             btnActive: 'bg-indigo-600 text-white shadow-xs',
@@ -208,9 +157,8 @@ function selectRole(role) {
             actionUrl: "{{ url_for('auth.login', role='faculty') }}"
         },
         'student': {
-            email: 'student1@university.edu',
             title: 'Student Scholar Portal Sign In',
-            subtitle: 'Adarsh Katiyar • Capstone Submissions & Milestones',
+            subtitle: 'Capstone Submissions & Milestone Progress',
             icon: 'fas fa-user-graduate text-2xl',
             iconBox: 'bg-emerald-100 dark:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-400',
             btnActive: 'bg-emerald-600 text-white shadow-xs',
@@ -221,34 +169,39 @@ function selectRole(role) {
 
     const target = roles[role] || roles['faculty'];
 
-    // Update form values
-    document.getElementById('email').value = target.email;
-    document.getElementById('password').value = 'password123';
-    document.getElementById('selected-role-input').value = role;
-    document.getElementById('login-form').action = target.actionUrl;
+    // Update state and action target without touching input values
+    const roleInput = document.getElementById('selected-role-input');
+    if (roleInput) roleInput.value = role;
+    const form = document.getElementById('login-form');
+    if (form) form.action = target.actionUrl;
 
-    // Update text
-    document.getElementById('login-portal-title').textContent = target.title;
-    document.getElementById('login-portal-subtitle').textContent = target.subtitle;
+    // Update title and subtitle
+    const titleEl = document.getElementById('login-portal-title');
+    if (titleEl) titleEl.textContent = target.title;
+    const subEl = document.getElementById('login-portal-subtitle');
+    if (subEl) subEl.textContent = target.subtitle;
 
-    // Update icon
+    // Update role icon and container
     const iconEl = document.getElementById('login-role-icon');
-    iconEl.className = target.icon;
+    if (iconEl) iconEl.className = target.icon;
     const iconBox = document.getElementById('login-role-icon-container');
-    iconBox.className = `inline-flex items-center justify-center w-14 h-14 rounded-2xl border shadow-sm transition-all ${target.iconBox}`;
+    if (iconBox) iconBox.className = `inline-flex items-center justify-center w-14 h-14 rounded-2xl border shadow-sm transition-all ${target.iconBox}`;
 
-    // Update submit button
+    // Update button styling
     const submitBtn = document.getElementById('login-submit-btn');
-    submitBtn.className = `btn-shimmer w-full flex items-center justify-center py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white transition-all border border-white/20 mt-2 ${target.btnShimmer}`;
-    submitBtn.querySelector('span').textContent = `Sign In as ${role.toUpperCase()}`;
+    if (submitBtn) {
+        submitBtn.className = `btn-shimmer w-full flex items-center justify-center py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white transition-all border border-white/20 mt-3 ${target.btnShimmer}`;
+    }
 
-    // Update tab button styles
+    // Update role button pills
     ['admin', 'faculty', 'student'].forEach(r => {
         const btn = document.getElementById(`role-btn-${r}`);
-        if (r === role) {
-            btn.className = `py-2 rounded-xl transition-all flex items-center justify-center ${target.btnActive}`;
-        } else {
-            btn.className = 'py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center';
+        if (btn) {
+            if (r === role) {
+                btn.className = `py-2 rounded-xl transition-all flex items-center justify-center ${target.btnActive}`;
+            } else {
+                btn.className = 'py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center';
+            }
         }
     });
 }

@@ -59,7 +59,10 @@ class Submission(db.Model):
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
     submitted_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     submission_text = db.Column(db.Text)
-    document_url = db.Column(db.String(255))
+    submission_link = db.Column(db.String(500), nullable=True)  # Cloud link (Google Drive / GitHub Docs)
+    link_title = db.Column(db.String(255), nullable=True)       # Optional link title
+    notes = db.Column(db.Text, nullable=True)                   # Optional notes
+    document_url = db.Column(db.String(500), nullable=True)     # Retained for backwards compatibility
     repository_url = db.Column(db.String(255))
     status = db.Column(db.String(50), default='pending')  # 'pending', 'submitted', 'under_review', 'revision_required', 'approved', 'rejected'
     version = db.Column(db.Integer, default=1)
@@ -81,12 +84,21 @@ class Submission(db.Model):
     )
 
     @property
+    def deliverable_url(self):
+        return self.submission_link or self.document_url or self.repository_url
+
+    @property
     def file_attachment_url(self):
-        return self.document_url
+        return self.submission_link or self.document_url
 
     @file_attachment_url.setter
     def file_attachment_url(self, val):
+        self.submission_link = val
         self.document_url = val
+
+    @property
+    def file_url(self):
+        return self.submission_link or self.document_url or self.repository_url
 
     @property
     def github_url(self):
