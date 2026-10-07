@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Terms - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Academic Terms &amp; Cohorts</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">Calendar Settings</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Configure academic project terms, start and end dates, and active cohort settings.</p>
+</div>
+
+<div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <table class="w-full text-left border-collapse text-sm">
+        <thead>
+            <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                <th class="py-3.5 px-6 whitespace-nowrap">Term Name</th>
+                <th class="py-3.5 px-6 whitespace-nowrap">Start Date</th>
+                <th class="py-3.5 px-6 whitespace-nowrap">End Date</th>
+                <th class="py-3.5 px-6 text-right whitespace-nowrap">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            {% for t in terms %}
+            <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="py-4 px-6 font-bold text-slate-900 dark:text-white whitespace-nowrap">{{ t.term_name }}</td>
+                <td class="py-4 px-6 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap">{{ t.start_date }}</td>
+                <td class="py-4 px-6 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap">{{ t.end_date }}</td>
+                <td class="py-4 px-6 text-right whitespace-nowrap">
+                    {% if t.is_current %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Current Active
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Archived</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Progress &amp; Grades - Student Portal{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center text-sm text-slate-500 dark:text-slate-400">
+    <a href="{{ url_for('student.dashboard') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-bold flex items-center transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Project Progress &amp; Grades</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">Live Burndown</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-xs mt-1">Detailed analysis of your team's milestone performance, score distribution, and timeline velocity.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Burndown Chart -->
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-chart-line text-indigo-600 dark:text-indigo-400 mr-2"></i> Milestone Burndown Velocity
+            </h3>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">Sprint View</span>
+        </div>
+        <div class="relative w-full" style="height: 260px; max-height: 260px;">
+            <canvas id="burndownChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Score Distribution -->
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-award text-emerald-600 dark:text-emerald-400 mr-2"></i> Milestone Rubric Grades
+            </h3>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">Evaluations</span>
+        </div>
+        <div class="relative w-full" style="height: 260px; max-height: 260px;">
+            <canvas id="scoreChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Table -->
+<div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex justify-between items-center">
+        <h3 class="font-bold text-slate-900 dark:text-white text-sm">
+            <i class="fas fa-list-check text-indigo-500 mr-2"></i>All Milestones Details
+        </h3>
+        <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">Academic Term Fall 2024</span>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead>
+                <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                    <th scope="col" class="px-6 py-3.5 whitespace-nowrap">Milestone</th>
+                    <th scope="col" class="px-6 py-3.5 whitespace-nowrap">Deadline</th>
+                    <th scope="col" class="px-6 py-3.5 whitespace-nowrap">Status</th>
+                    <th scope="col" class="px-6 py-3.5 whitespace-nowrap">Score</th>
+                    <th scope="col" class="px-6 py-3.5 text-right whitespace-nowrap">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white whitespace-nowrap">M1: Architecture &amp; Proposal</td>
+                    <td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">Sep 15, 2026</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Approved
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">92.0% (A+)</td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Recorded</span>
+                    </td>
+                </tr>
+                <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white whitespace-nowrap">M2: Schema &amp; Pipeline Design</td>
+                    <td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">Sep 30, 2026</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Under Review
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 font-mono whitespace-nowrap">-</td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <a href="{{ url_for('student.submit_milestone', milestone_id=2) }}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline text-xs">Update &rarr;</a>
+                    </td>
+                </tr>
+                <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900 dark:text-white whitespace-nowrap">M3: Core Implementation</td>
+                    <td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">Oct 10, 2026</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Pending
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 font-mono whitespace-nowrap">-</td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <a href="{{ url_for('student.submit_milestone', milestone_id=3) }}" class="btn-shimmer px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs inline-flex items-center">
+                            Submit &rarr;
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Timeline representation -->
+<h3 class="text-lg font-extrabold text-slate-900 dark:text-white mb-4 flex items-center">
+    <i class="fas fa-timeline text-indigo-500 mr-2"></i>Sprint Delivery Roadmap
+</h3>
+<div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 pl-8 mb-8">
+    {% set sample_timeline = [
+        {'title': 'M1: Project Proposal & Architecture', 'status': 'approved', 'deadline': 'Sep 15', 'description': 'Initial pitch & requirements spec', 'score': 92},
+        {'title': 'M2: System Design & DB Schema', 'status': 'revision_required', 'deadline': 'Sep 30', 'description': 'Architecture, ER diagrams & API models', 'score': 85},
+        {'title': 'M3: Implementation Phase 1', 'status': 'pending', 'deadline': 'Oct 10', 'description': 'Core logic & model training pipelines', 'score': None}
+    ] %}
+    {% include 'components/_milestone_timeline.html' with context %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function isDark() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        const textColor = isDark() ? '#cbd5e1' : '#334155';
+        const gridColor = isDark() ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+
+        if(typeof ChartsHelper !== 'undefined') {
+            const bCtx = document.getElementById('burndownChart');
+            if (bCtx) {
+                new Chart(bCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                        datasets: [
+                            {
+                                label: 'Ideal Target',
+                                data: [5, 4, 3, 2, 0],
+                                borderColor: isDark() ? '#64748b' : '#94a3b8',
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0
+                            },
+                            {
+                                label: 'Actual Burndown',
+                                data: [5, 4, 4, null, null],
+                                borderColor: '#6366f1',
+                                backgroundColor: isDark() ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.08)',
+                                fill: true,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: textColor },
+                                grid: { color: gridColor },
+                                title: { display: true, text: 'Milestones Remaining', color: textColor }
+                            },
+                            x: {
+                                ticks: { color: textColor },
+                                grid: { color: gridColor }
+                            }
+                        },
+                        plugins: {
+                            legend: { labels: { color: textColor } }
+                        }
+                    }
+                });
+            }
+            
+            const scoreCtx = document.getElementById('scoreChart');
+            if (scoreCtx) {
+                new Chart(scoreCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['M1: Proposal', 'M2: Design', 'M3: Implementation'],
+                        datasets: [{
+                            label: 'Score %',
+                            data: [92, 85, 0],
+                            backgroundColor: ['#10b981', '#6366f1', '#e2e8f0'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            y: { 
+                                min: 0, 
+                                max: 100,
+                                ticks: { color: textColor, callback: v => v + '%' },
+                                grid: { color: gridColor }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { 
+                                    color: textColor,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    autoSkip: false,
+                                    font: { family: "'Plus Jakarta Sans', sans-serif", size: 10.5, weight: '700' }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

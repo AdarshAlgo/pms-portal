@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}System Governance & Configuration Settings - Institutional Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-4">
+    <!-- Header -->
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">System Governance &amp; Controls</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    Configuration Engine
+                </span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage global institutional parameters, upload limits, faculty quotas, and submission lockdown toggles.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Admin Dashboard
+        </a>
+    </div>
+
+    <!-- Settings Card -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl relative overflow-hidden">
+        <div class="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-teal-400 absolute top-0 left-0"></div>
+
+        <form method="POST" action="{{ url_for('admin.system_settings') }}" class="space-y-8">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+            <!-- Storage & Deliverables Section -->
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1 flex items-center">
+                    <i class="fas fa-cloud-arrow-up text-indigo-500 mr-2"></i> Deliverables &amp; File Upload Policies
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Configure storage quotas and permitted attachment formats for student project deliverables.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="max_file_size_mb" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                            Max File Size Limit (MB) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                                <i class="fas fa-hard-drive"></i>
+                            </span>
+                            <input type="number" id="max_file_size_mb" name="max_file_size_mb" min="1" max="100" required
+                                   value="{{ settings.MAX_FILE_SIZE_MB }}"
+                                   class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Recommended: 32MB for source archives and high-resolution dossiers.</p>
+                    </div>
+
+                    <div>
+                        <label for="allowed_extensions" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                            Allowed File Extensions <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                                <i class="fas fa-file-shield"></i>
+                            </span>
+                            <input type="text" id="allowed_extensions" name="allowed_extensions" required
+                                   value="{{ settings.ALLOWED_EXTENSIONS }}"
+                                   class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Comma-separated list (e.g. pdf,zip,docx,pptx).</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-slate-100 dark:border-slate-800">
+
+            <!-- Academic Governance & Mentorship Quota -->
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1 flex items-center">
+                    <i class="fas fa-chalkboard-user text-purple-500 mr-2"></i> Faculty Workload Governance
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Set institutional constraints on supervisory cohort load per professor.</p>
+
+                <div class="max-w-md">
+                    <label for="faculty_max_cohorts" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                        Max Recommended Cohorts Per Faculty <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-xs">
+                            <i class="fas fa-users-gear"></i>
+                        </span>
+                        <input type="number" id="faculty_max_cohorts" name="faculty_max_cohorts" min="1" max="20" required
+                               value="{{ settings.FACULTY_MAX_COHORTS }}"
+                               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Triggers workload warning badges on the Faculty Workload Balancer.</p>
+                </div>
+            </div>
+
+            <hr class="border-slate-100 dark:border-slate-800">
+
+            <!-- Security & Platform Lock switch -->
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1 flex items-center">
+                    <i class="fas fa-lock text-rose-500 mr-2"></i> System Lock &amp; Embargo Controls
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Institution-wide submission freeze during jury evaluations or accreditation review periods.</p>
+
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-bold text-slate-900 dark:text-white">Freeze All New Milestone Deliverables</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">When active, students cannot upload new submissions or revise deliverables.</div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="submissions_locked" value="true" {% if settings.SUBMISSIONS_LOCKED %}checked{% endif %} class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Action -->
+            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end items-center space-x-3">
+                <a href="{{ url_for('admin.dashboard') }}" class="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-shimmer px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98] flex items-center">
+                    <i class="fas fa-save mr-2"></i> Save Governance Configurations
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

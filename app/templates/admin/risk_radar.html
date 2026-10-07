@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}At-Risk Cohort Radar & Early Warning Telemetry - Institutional Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">At-Risk Cohort Radar &amp; Telemetry</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800 animate-pulse">
+                Early Warning Engine
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Autonomous telemetry detecting lagging milestones (&lt;50% progress) and missed deadlines, with 1-click warning dispatches.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-bold">
+            <i class="fas fa-exclamation-circle mr-1"></i> At-Risk: <strong>{{ at_risk_cohorts | length }}</strong>
+        </span>
+        <span class="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+            <i class="fas fa-check mr-1"></i> On Track: <strong>{{ healthy_cohorts | length }}</strong>
+        </span>
+    </div>
+</div>
+
+<!-- Critical Warning Banner if At-Risk > 0 -->
+{% if at_risk_cohorts %}
+<div class="p-5 rounded-3xl bg-rose-50/90 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-lg shadow-md shadow-rose-600/30 shrink-0">
+            <i class="fas fa-satellite-dish"></i>
+        </div>
+        <div>
+            <h4 class="font-extrabold text-rose-950 dark:text-rose-200 text-sm">{{ at_risk_cohorts | length }} Teams Flagged Below Institutional Progress Thresholds</h4>
+            <p class="text-xs text-rose-700 dark:text-rose-400 mt-0.5">These capstone teams have missed deliverables or accumulated sub-50% weighted milestone burndown.</p>
+        </div>
+    </div>
+    <span class="px-3 py-1 bg-rose-200/70 dark:bg-rose-800/60 text-rose-900 dark:text-rose-200 rounded-xl text-xs font-black uppercase">
+        Action Required
+    </span>
+</div>
+{% endif %}
+
+<!-- At Risk Cohorts Grid -->
+<div class="mb-10">
+    <h3 class="text-lg font-extrabold text-slate-900 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-triangle-exclamation text-rose-500 mr-2"></i> Flagged At-Risk Capstone Teams
+    </h3>
+
+    {% if at_risk_cohorts %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for item in at_risk_cohorts %}
+        <div class="content-card bg-white dark:bg-slate-900 rounded-3xl p-6 border-2 border-rose-200 dark:border-rose-900/60 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                        Progress: {{ item.progress }}%
+                    </span>
+                    <h4 class="text-lg font-extrabold text-slate-900 dark:text-white mt-1">{{ item.team.team_name }}</h4>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400 font-bold">{{ item.project.title if item.project else 'Project Title Pending' }}</p>
+                </div>
+                <div class="text-right text-xs">
+                    <span class="text-slate-400">Mentor:</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200 block">{{ item.guide }}</span>
+                </div>
+            </div>
+
+            <!-- Risk Reasons -->
+            <div class="mb-4 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 rounded-2xl border border-rose-100 dark:border-rose-900/40">
+                <span class="text-[11px] font-bold text-rose-800 dark:text-rose-300 uppercase tracking-wider block mb-1.5">
+                    <i class="fas fa-flag mr-1"></i> Detected Telemetry Alerts:
+                </span>
+                <ul class="space-y-1">
+                    {% for reason in item.reasons %}
+                    <li class="text-xs text-rose-700 dark:text-rose-400 flex items-start space-x-1.5">
+                        <span class="text-rose-500 mt-0.5">&bull;</span>
+                        <span>{{ reason }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-xs font-bold mb-1">
+                    <span class="text-slate-500 dark:text-slate-400">Milestone Progress</span>
+                    <span class="text-rose-600 dark:text-rose-400 font-mono">{{ item.progress }}%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                    <div class="bg-rose-500 h-full rounded-full" style="width: {{ item.progress }}%"></div>
+                </div>
+            </div>
+
+            <!-- 1-Click Warning Notice Dispatch Form -->
+            <form method="POST" action="{{ url_for('admin.dispatch_risk_warning', team_id=item.team.id) }}" class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Notice Tier</label>
+                        <select name="escalation_level" class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold">
+                            <option value="formal_warning">Formal Progress Warning</option>
+                            <option value="remedial_session">Mandatory Remedial Meeting</option>
+                            <option value="academic_probation">Academic Escalation / Hold</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Custom Advisory Notice</label>
+                        <input type="text" name="message" placeholder="Optional directive remarks..."
+                               class="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/30 transition-all flex items-center">
+                        <i class="fas fa-paper-plane mr-1.5"></i> Dispatch Official Warning Notice
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-8 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-3xl border border-emerald-200 dark:border-emerald-800 text-center">
+        <i class="fas fa-shield-check text-4xl text-emerald-600 dark:text-emerald-400 mb-2 block"></i>
+        <h4 class="font-extrabold text-emerald-950 dark:text-emerald-200 text-base">All Active Cohorts Are On Track</h4>
+        <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">No teams currently below the 50% milestone progression threshold.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Healthy Cohorts Section -->
+<div>
+    <h3 class="text-lg font-extrabold text-slate-900 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-check-double text-emerald-500 mr-2"></i> On-Track Capstone Cohorts ({{ healthy_cohorts | length }})
+    </h3>
+
+    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                    <th class="py-3 px-6">Team Name</th>
+                    <th class="py-3 px-6">Project Title</th>
+                    <th class="py-3 px-6">Mentor</th>
+                    <th class="py-3 px-6 text-center">Progress</th>
+                    <th class="py-3 px-6 text-right">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for item in healthy_cohorts %}
+                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                    <td class="py-3.5 px-6 font-bold text-slate-900 dark:text-white">{{ item.team.team_name }}</td>
+                    <td class="py-3.5 px-6 text-xs text-slate-700 dark:text-slate-300">{{ item.project.title if item.project else 'N/A' }}</td>
+                    <td class="py-3.5 px-6 text-xs text-slate-600 dark:text-slate-400">{{ item.guide }}</td>
+                    <td class="py-3.5 px-6 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
+                            {{ item.progress }}%
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-6 text-right text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <i class="fas fa-check-circle mr-1"></i> On Schedule
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

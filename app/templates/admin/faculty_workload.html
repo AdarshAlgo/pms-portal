@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Mentorship Workload & Quota Balancer - Institutional Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Faculty Mentorship Workload Monitor</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800">
+                Institutional Policy: Max {{ max_quota }} Teams/Faculty
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Audit faculty supervisory capacity, evaluate balance distribution, and prevent mentor overburdening.</p>
+    </div>
+    <a href="{{ url_for('admin.manage_teams') }}" class="btn-shimmer px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all flex items-center">
+        <i class="fas fa-random mr-2"></i> Reassign Teams &amp; Balance Load
+    </a>
+</div>
+
+<!-- Faculty Workload Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {% for item in workload_data %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between hover-glow transition-all">
+        <div>
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/20 border border-white/20">
+                        {{ item.faculty.first_name[0] }}{{ item.faculty.last_name[0] if item.faculty.last_name else '' }}
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 dark:text-white text-base leading-tight">{{ item.faculty.full_name }}</h3>
+                        <p class="text-xs text-indigo-600 dark:text-indigo-400 font-bold mt-0.5">{{ item.faculty.department or 'Computer Science' }}</p>
+                    </div>
+                </div>
+
+                {% if item.is_overburdened %}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800 animate-pulse">
+                        Quota Exceeded
+                    </span>
+                {% elif item.load_percentage >= 70 %}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800">
+                        Near Cap
+                    </span>
+                {% else %}
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">
+                        Optimal
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Load Bar -->
+            <div class="mb-4 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                <div class="flex justify-between items-center text-xs font-bold mb-2">
+                    <span class="text-slate-500 dark:text-slate-400">Supervisory Load:</span>
+                    <span class="text-slate-900 dark:text-white font-mono font-black">{{ item.team_count }} / {{ item.max_quota }} Teams ({{ item.load_percentage }}%)</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 {% if item.is_overburdened %}bg-rose-500{% elif item.load_percentage >= 70 %}bg-amber-500{% else %}bg-indigo-600{% endif %}"
+                         style="width: {{ item.load_percentage }}%"></div>
+                </div>
+            </div>
+
+            <!-- Stats summary -->
+            <div class="grid grid-cols-2 gap-3 mb-4 text-center">
+                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-800">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Evaluations</span>
+                    <span class="text-sm font-black text-slate-800 dark:text-slate-200">{{ item.evaluated_count }}</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/40 dark:border-slate-800">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block">Active Cohorts</span>
+                    <span class="text-sm font-black text-slate-800 dark:text-slate-200">{{ item.team_count }}</span>
+                </div>
+            </div>
+
+            <!-- Assigned Teams Badges -->
+            <div class="mb-4">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-2">Assigned Teams:</span>
+                {% if item.teams %}
+                <div class="flex flex-wrap gap-1.5">
+                    {% for tm in item.teams %}
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold">
+                        <i class="fas fa-users mr-1 text-indigo-500"></i> {{ tm.team_name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 italic">No project teams assigned yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs">
+            <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{{ item.faculty.email }}</span>
+            <a href="{{ url_for('admin.manage_teams') }}" class="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                Reassign &rarr;
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

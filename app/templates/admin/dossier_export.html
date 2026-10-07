@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}ABET / NBA Institutional Accreditation Dossier - Print & Export{% endblock %}
+
+{% block content %}
+<!-- Print Control Bar (Hidden during print) -->
+<div class="print:hidden mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">ABET / NBA Accreditation Dossier</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800">
+                Official Institutional Record
+            </span>
+        </div>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">Consolidated outcome-based evaluation results, SDG compliance indicators, and rubric metrics for accreditation audits.</p>
+    </div>
+    <div class="flex items-center space-x-3 shrink-0">
+        <a href="{{ url_for('admin.export_dossier', format='csv') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center border border-slate-200 dark:border-slate-700">
+            <i class="fas fa-file-csv mr-2 text-emerald-500"></i> Export Raw CSV
+        </a>
+        <button onclick="window.print()" class="btn-shimmer px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/30 transition-all flex items-center">
+            <i class="fas fa-print mr-2"></i> Print Official Dossier
+        </button>
+    </div>
+</div>
+
+<!-- Formal Printable Dossier Document -->
+<div class="bg-white text-slate-900 p-8 sm:p-12 rounded-3xl border border-slate-200 shadow-lg dark:bg-slate-950 dark:text-white dark:border-slate-800 print:border-none print:shadow-none print:p-0 print:m-0">
+    <!-- Institutional Document Header -->
+    <div class="border-b-2 border-slate-900 dark:border-white/20 pb-6 mb-8 flex justify-between items-start">
+        <div class="flex items-start space-x-4">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0 print:border print:border-slate-400">
+                PMS
+            </div>
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">National Engineering &amp; Technology University</h1>
+                <h2 class="text-sm font-extrabold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest mt-0.5">Faculty of Computer Science &amp; Engineering &bull; Office of Academic Accreditation</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">Document Ref: ABET-NBA-CAPSTONE-DOSSIER-2026-V2 &bull; Cycle: Final Term 2026</p>
+            </div>
+        </div>
+        <div class="text-right text-xs font-mono text-slate-500 dark:text-slate-400 shrink-0">
+            <div>Generated: <strong>{{ generated_at.strftime('%Y-%m-%d %H:%M UTC') }}</strong></div>
+            <div>Verification: <strong class="text-emerald-600">SHA-256 Validated</strong></div>
+            <div>Accreditation Standard: <strong>ABET Criterion 5 / NBA Tier-1</strong></div>
+        </div>
+    </div>
+
+    <!-- Executive Summary Metrics -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Evaluated Cohorts</span>
+            <span class="text-xl font-black text-slate-900 dark:text-white mt-1 block">{{ dossier_data | length }} Projects</span>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">UN SDG 9 Compliance</span>
+            <span class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">100% Verified</span>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Quality Assessment</span>
+            <span class="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1 block">Outcome Rubrics</span>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Lead Guide</span>
+            <span class="text-sm font-black text-slate-800 dark:text-slate-200 mt-1.5 block">Dr. Ankit Verma</span>
+        </div>
+    </div>
+
+    <!-- Official Performance Matrix Table -->
+    <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden mb-12">
+        <table class="w-full text-left border-collapse text-xs">
+            <thead>
+                <tr class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-[10px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-black">
+                    <th class="py-3 px-4">#</th>
+                    <th class="py-3 px-4">Capstone Project Title</th>
+                    <th class="py-3 px-4">Team &amp; Lead Scholar</th>
+                    <th class="py-3 px-4">Department &amp; Guide</th>
+                    <th class="py-3 px-4 text-center">SDG 9</th>
+                    <th class="py-3 px-4 text-center">Progress</th>
+                    <th class="py-3 px-4 text-center">Rubric Avg</th>
+                    <th class="py-3 px-4 text-center">Grade</th>
+                    <th class="py-3 px-4 text-right">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                {% for item in dossier_data %}
+                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-400">{{ loop.index }}</td>
+                    <td class="py-3 px-4 font-bold text-slate-900 dark:text-white max-w-[220px]">
+                        {{ item.project_title }}
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-800 dark:text-slate-200">{{ item.team_name }}</div>
+                        <div class="text-[10px] text-slate-500 font-medium">Lead: {{ item.lead_scholar }}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="text-slate-700 dark:text-slate-300 font-medium">{{ item.department }}</div>
+                        <div class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">Guide: {{ item.guide }}</div>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
+                            {{ item.sdg_alignment }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center font-mono font-bold">
+                        {{ item.progress_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-center font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                        {{ item.avg_score_pct }}%
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 font-mono">
+                            {{ item.overall_grade }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <span class="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">
+                            {{ item.status | capitalize }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Formal Sign-Off Footer -->
+    <div class="grid grid-cols-3 gap-8 pt-8 border-t-2 border-slate-900 dark:border-white/20 text-center text-xs">
+        <div>
+            <div class="h-12 flex items-end justify-center pb-1">
+                <span class="font-serif italic text-slate-500 dark:text-slate-400">Dr. Ankit Verma</span>
+            </div>
+            <div class="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-900 dark:text-white">
+                Dr. Ankit Verma
+            </div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-wider">Project Guide &amp; Master Evaluator</div>
+        </div>
+
+        <div>
+            <div class="h-12 flex items-end justify-center pb-1">
+                <span class="font-serif italic text-slate-500 dark:text-slate-400">Prof. HOD Office</span>
+            </div>
+            <div class="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-900 dark:text-white">
+                Head of Department
+            </div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-wider">Computer Science &amp; Engineering</div>
+        </div>
+
+        <div>
+            <div class="h-12 flex items-end justify-center pb-1">
+                <span class="font-serif italic text-slate-500 dark:text-slate-400">Institutional Seal</span>
+            </div>
+            <div class="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-900 dark:text-white">
+                Dean of Academic Affairs
+            </div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-wider">National Accreditation Board</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}User Directory &amp; Governance - PMS Portal{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header with Stats -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Institutional User Directory</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
+                    {{ total_users_count or users|length }} Total Accounts
+                </span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mt-1 font-medium">
+                Identity access management, role authorization, and tamper-proof account lockouts.
+            </p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                {{ active_count or 0 }} Active
+            </span>
+            {% if inactive_count and inactive_count > 0 %}
+            <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                <i class="fas fa-pause-circle mr-1.5"></i>
+                {{ inactive_count }} Inactive
+            </span>
+            {% endif %}
+            {% if blacklisted_count and blacklisted_count > 0 %}
+            <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                <i class="fas fa-user-lock mr-1.5"></i>
+                {{ blacklisted_count }} Blacklisted
+            </span>
+            {% endif %}
+            <a href="{{ url_for('admin.manage_permissions') }}" class="btn-shimmer px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center">
+                <i class="fas fa-sliders-h mr-1.5"></i> Permissions
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter, Search and Tab Bar -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs">
+        <!-- Role Filters -->
+        <div class="flex flex-wrap items-center gap-1.5">
+            <a href="{{ url_for('admin.manage_users', role='all', status=status_filter, q=search_query) }}" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if current_filter == 'all' %}bg-indigo-600 text-white shadow-xs{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                All Roles
+            </a>
+            <a href="{{ url_for('admin.manage_users', role='faculty', status=status_filter, q=search_query) }}" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if current_filter == 'faculty' %}bg-indigo-600 text-white shadow-xs{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Faculty
+            </a>
+            <a href="{{ url_for('admin.manage_users', role='student', status=status_filter, q=search_query) }}" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if current_filter == 'student' %}bg-indigo-600 text-white shadow-xs{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Students
+            </a>
+            <a href="{{ url_for('admin.manage_users', role='admin', status=status_filter, q=search_query) }}" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {% if current_filter == 'admin' %}bg-indigo-600 text-white shadow-xs{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                Admins
+            </a>
+            
+            <div class="h-4 w-px bg-slate-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
+            
+            <!-- Status Quick Filter -->
+            <a href="{{ url_for('admin.manage_users', role=current_filter, status='all', q=search_query) }}" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all {% if status_filter == 'all' %}bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white{% else %}text-slate-400 hover:text-slate-600 dark:hover:text-slate-200{% endif %}">
+                All Status
+            </a>
+            <a href="{{ url_for('admin.manage_users', role=current_filter, status='blacklisted', q=search_query) }}" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all {% if status_filter == 'blacklisted' %}bg-rose-600 text-white{% else %}text-rose-500 hover:text-rose-600 dark:hover:text-rose-400{% endif %}">
+                Blacklisted Only
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="GET" action="{{ url_for('admin.manage_users') }}" class="flex items-center relative">
+            <input type="hidden" name="role" value="{{ current_filter }}">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i class="fas fa-search text-xs"></i>
+            </div>
+            <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Search by name, email..." class="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 w-full sm:w-56">
+            {% if search_query %}
+            <a href="{{ url_for('admin.manage_users', role=current_filter, status=status_filter) }}" class="ml-1 text-slate-400 hover:text-slate-600 text-xs px-1.5 py-1">
+                <i class="fas fa-times"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Fixed Width, Zero-Overflow Table (Linear / Stripe Standard) -->
+    <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xs border border-slate-200 dark:border-white/10 overflow-hidden">
+        <div class="w-full">
+            <table class="table-fixed w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-white/[0.02] text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-white/10 font-bold text-[10px]">
+                        <th class="py-3.5 px-4 w-[35%]">User Identity</th>
+                        <th class="py-3.5 px-4 w-[20%]">Department &amp; Role</th>
+                        <th class="py-3.5 px-4 w-[15%]">Account State</th>
+                        <th class="py-3.5 px-4 w-[30%] text-right">Security Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                    {% for u in users %}
+                    <tr class="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors group">
+                        
+                        <!-- 1. User Identity (35% width, stacked 2-line formatting) -->
+                        <td class="py-3.5 px-4 overflow-hidden">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-xl shrink-0 font-bold flex items-center justify-center text-xs shadow-xs
+                                    {% if u.status == 'blacklisted' %}
+                                        bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800
+                                    {% elif u.is_admin %}
+                                        bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300
+                                    {% elif u.is_faculty %}
+                                        bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300
+                                    {% else %}
+                                        bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300
+                                    {% endif %}">
+                                    {% if u.status == 'blacklisted' %}
+                                        <i class="fas fa-user-lock"></i>
+                                    {% else %}
+                                        {{ u.first_name[0] }}{{ u.last_name[0] if u.last_name else '' }}
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center space-x-1.5">
+                                        <span class="font-extrabold text-slate-900 dark:text-white truncate block">
+                                            {{ u.full_name }}
+                                        </span>
+                                        {% if u.is_online %}
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Online Now"></span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-[11px] text-slate-400 font-mono truncate">
+                                        {{ u.email }}
+                                    </div>
+                                    {% if u.enrollment_number %}
+                                        <div class="text-[9px] text-slate-400 uppercase tracking-wider font-mono">
+                                            Roll: {{ u.enrollment_number }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 2. Department & Role (20% width) -->
+                        <td class="py-3.5 px-4 overflow-hidden">
+                            <div class="truncate">
+                                <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider
+                                    {% if u.is_admin %}
+                                        bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800
+                                    {% elif u.is_faculty %}
+                                        bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800
+                                    {% else %}
+                                        bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800
+                                    {% endif %}">
+                                    {{ u.role.role_name }}
+                                </span>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                                    {{ u.department or 'Academic Administration' }}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 3. Account Status Badge (15% width) -->
+                        <td class="py-3.5 px-4 overflow-hidden">
+                            {% if u.status == 'blacklisted' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800/80">
+                                    <i class="fas fa-ban mr-1"></i> Blacklisted
+                                </span>
+                            {% elif u.status == 'inactive' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                    <i class="fas fa-pause mr-1 text-[8px]"></i> Inactive
+                                </span>
+                            {% elif u.status == 'suspended' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-950/80 dark:text-orange-300 border border-orange-300 dark:border-orange-800">
+                                    <i class="fas fa-exclamation-triangle mr-1 text-[8px]"></i> Suspended
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span> Active
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- 4. Security Actions (30% width, compact button group) -->
+                        <td class="py-3.5 px-4 text-right overflow-hidden">
+                            <div class="flex items-center justify-end space-x-1.5">
+                                
+                                {% if u.id != current_user.id %}
+                                    <!-- Toggle Active / Inactive (Only when not blacklisted) -->
+                                    {% if u.status != 'blacklisted' %}
+                                    <form action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                                        {% if u.status == 'active' %}
+                                            <button type="submit" title="Pause account to inactive" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-white/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-slate-600 hover:text-amber-700 dark:text-slate-300 dark:hover:text-amber-300 transition-colors">
+                                                <i class="fas fa-pause mr-1 text-[9px]"></i> Pause
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" title="Re-activate account" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 dark:bg-emerald-500/15 hover:bg-emerald-100 dark:hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 transition-colors">
+                                                <i class="fas fa-play mr-1 text-[9px]"></i> Activate
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                    {% endif %}
+
+                                    <!-- Blacklist / Unblock Action -->
+                                    {% if u.status == 'blacklisted' %}
+                                    <form action="{{ url_for('admin.unblock_user', user_id=u.id) }}" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                                        <button type="submit" title="Unblock and reinstate user" class="px-2 py-1 rounded-lg text-[11px] font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-all">
+                                            <i class="fas fa-unlock mr-1 text-[9px]"></i> Restore
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button type="button" onclick="openBlacklistModal({{ u.id }}, '{{ u.full_name }}', '{{ u.email }}')" title="Blacklist and terminate sessions" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-100 dark:bg-white/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-slate-600 hover:text-rose-700 dark:text-slate-300 dark:hover:text-rose-300 transition-colors">
+                                        <i class="fas fa-user-slash mr-1 text-[9px]"></i> Lock
+                                    </button>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-[10px] font-bold text-slate-400 italic px-2 py-1">
+                                        Current Admin
+                                    </span>
+                                {% endif %}
+
+                                <!-- Inspection Details Drawer Button -->
+                                <button type="button" onclick="openUserDrawer({{ u.id }}, '{{ u.full_name }}', '{{ u.email }}', '{{ u.role.role_name }}', '{{ u.department or 'N/A' }}', '{{ u.status }}', '{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else 'N/A' }}', '{{ u.block_reason or '' }}', '{{ u.blocked_at.strftime('%Y-%m-%d %H:%M') if u.blocked_at else '' }}')" title="Inspect telemetry" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300 flex items-center justify-center transition-colors">
+                                    <i class="fas fa-ellipsis-v text-[10px]"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-10 text-slate-400 text-xs font-medium">
+                            <i class="fas fa-user-slash text-2xl mb-2 text-slate-300 block"></i>
+                            No institutional user accounts found matching your query.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: Confirm Account Blacklisting & Session Termination
+     ========================================================================= -->
+<div id="blacklist-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-rose-200 dark:border-rose-900/50 overflow-hidden animate-fade-in-up">
+        
+        <div class="h-1 bg-gradient-to-r from-rose-500 to-red-600 w-full"></div>
+        
+        <div class="p-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+                    <i class="fas fa-shield-alt text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white">Blacklist User Account</h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Zero-loophole institutional security lockout</p>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-xs text-rose-800 dark:text-rose-300 mb-4">
+                <div class="font-bold flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-1.5"></i> Immediate Session Termination:
+                </div>
+                <div class="mt-1 text-[11px]">
+                    User <strong id="modal-user-target"></strong> will be immediately signed out from all active devices. Subsequent login attempts will be rejected with HTTP 403 Forbidden.
+                </div>
+            </div>
+
+            <form id="blacklist-form" method="POST" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                
+                <div class="mb-4">
+                    <label for="block_reason" class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1.5">
+                        Mandatory Reason for Blacklisting
+                    </label>
+                    <textarea name="block_reason" id="block_reason" rows="3" required placeholder="Describe the academic policy violation, misconduct, or security concern..." class="w-full text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 p-2.5 text-slate-900 dark:text-white placeholder-slate-400 transition-all"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2">
+                    <button type="button" onclick="closeBlacklistModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-300 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/30 transition-all flex items-center">
+                        <i class="fas fa-lock mr-1.5"></i> Confirm Lockout
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     DRAWER: User Telemetry & Governance Inspector
+     ========================================================================= -->
+<div id="user-drawer-backdrop" onclick="closeUserDrawer()" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs hidden transition-opacity"></div>
+<div id="user-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
+            <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-user-shield text-indigo-600 mr-2"></i> Account Telemetry
+            </h3>
+            <button onclick="closeUserDrawer()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Full Name</span>
+                <p id="drawer-name" class="font-bold text-slate-900 dark:text-white mt-0.5 text-sm"></p>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Email Address</span>
+                <p id="drawer-email" class="font-mono text-slate-700 dark:text-slate-300 mt-0.5"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Role</span>
+                    <p id="drawer-role" class="font-semibold text-slate-800 dark:text-slate-200 mt-0.5 capitalize"></p>
+                </div>
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Status</span>
+                    <p id="drawer-status" class="font-bold mt-0.5 uppercase tracking-wide"></p>
+                </div>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Department</span>
+                <p id="drawer-dept" class="font-medium text-slate-700 dark:text-slate-300 mt-0.5"></p>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Member Since</span>
+                <p id="drawer-created" class="font-mono text-slate-600 dark:text-slate-400 mt-0.5"></p>
+            </div>
+            
+            <div id="drawer-blacklist-box" class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 hidden">
+                <span class="text-[10px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
+                    <i class="fas fa-ban mr-1"></i> Blacklist Audit Trail
+                </span>
+                <p id="drawer-blacklist-reason" class="text-rose-900 dark:text-rose-200 mt-1 text-[11px]"></p>
+                <p id="drawer-blacklist-time" class="text-rose-500 dark:text-rose-400 text-[10px] font-mono mt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+        <a href="{{ url_for('admin.audit_logs') }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+            View Audit Log Ledger &rarr;
+        </a>
+    </div>
+</div>
+
+<script>
+function openBlacklistModal(userId, userName, userEmail) {
+    const modal = document.getElementById('blacklist-modal');
+    const form = document.getElementById('blacklist-form');
+    const targetLabel = document.getElementById('modal-user-target');
+    
+    targetLabel.textContent = `${userName} (${userEmail})`;
+    form.action = `/admin/users/${userId}/blacklist`;
+    modal.classList.remove('hidden');
+}
+
+function closeBlacklistModal() {
+    const modal = document.getElementById('blacklist-modal');
+    modal.classList.add('hidden');
+}
+
+function openUserDrawer(id, name, email, role, dept, status, created, reason, blockedAt) {
+    document.getElementById('drawer-name').textContent = name;
+    document.getElementById('drawer-email').textContent = email;
+    document.getElementById('drawer-role').textContent = role;
+    document.getElementById('drawer-dept').textContent = dept;
+    document.getElementById('drawer-created').textContent = created;
+
+    const statusEl = document.getElementById('drawer-status');
+    statusEl.textContent = status;
+    if (status === 'blacklisted') {
+        statusEl.className = 'font-bold mt-0.5 uppercase tracking-wide text-rose-600';
+    } else if (status === 'inactive') {
+        statusEl.className = 'font-bold mt-0.5 uppercase tracking-wide text-amber-500';
+    } else {
+        statusEl.className = 'font-bold mt-0.5 uppercase tracking-wide text-emerald-600';
+    }
+
+    const blBox = document.getElementById('drawer-blacklist-box');
+    if (status === 'blacklisted' && reason) {
+        document.getElementById('drawer-blacklist-reason').textContent = reason;
+        document.getElementById('drawer-blacklist-time').textContent = blockedAt ? `Locked at: ${blockedAt}` : '';
+        blBox.classList.remove('hidden');
+    } else {
+        blBox.classList.add('hidden');
+    }
+
+    document.getElementById('user-drawer-backdrop').classList.remove('hidden');
+    document.getElementById('user-drawer').classList.remove('translate-x-full');
+}
+
+function closeUserDrawer() {
+    document.getElementById('user-drawer-backdrop').classList.add('hidden');
+    document.getElementById('user-drawer').classList.add('translate-x-full');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Departments - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Academic Departments &amp; Leadership</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">Academic Units</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Institutes, engineering faculties, and designated department leadership.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for d in departments %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 hover-glow card-interactive transition-all">
+        <div class="flex justify-between items-start mb-4">
+            <span class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shadow-inner border border-indigo-100 dark:border-indigo-800">
+                {{ d.code }}
+            </span>
+            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase">Department</span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">{{ d.name }}</h3>
+        <div class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Code Identifier: <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ d.code }}</span>
+        </div>
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <span class="text-slate-400">Head of Department:</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200">
+                {% if d.head_of_department %}
+                    {{ d.head_of_department.full_name }}
+                {% else %}
+                    Assigned Faculty
+                {% endif %}
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

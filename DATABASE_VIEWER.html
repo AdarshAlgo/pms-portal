@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Viewer - Project Monitoring System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .table-tab.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+    
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                    <i class="fas fa-database text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">Database Viewer & Explorer</h1>
+                    <p class="text-xs text-slate-500">Project Progress Monitoring & Evaluation System &bull; Live Snapshot</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <span class="text-xs text-slate-500">Total Tables: <strong class="text-indigo-600">16</strong></span>
+                    <span class="mx-1 text-slate-300">|</span>
+                    <span class="text-xs text-slate-500">Total Rows: <strong class="text-emerald-600">126</strong></span>
+                </div>
+                <button onclick="window.location.reload()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-sync-alt mr-1.5"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Sidebar Table List -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Database Tables</h2>
+                
+                <div class="space-y-1" id="tableList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Database Info Box -->
+            <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 text-xs text-indigo-900 space-y-2">
+                <div class="font-bold flex items-center">
+                    <i class="fas fa-info-circle mr-1.5 text-indigo-600"></i> Database Details
+                </div>
+                <p>File: <code class="bg-white/80 px-1 py-0.5 rounded text-indigo-800 font-mono">project_monitoring.db</code></p>
+                <p>Generated: <span class="text-slate-600">Oct 05, 2026 - 10:45 AM</span></p>
+                <p>Engine: <span class="font-semibold text-indigo-700">SQLite 3 / MySQL Compatible</span></p>
+            </div>
+        </div>
+
+        <!-- Table Data Content Area -->
+        <div class="lg:col-span-3 space-y-4">
+            
+            <!-- Controls bar -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center">
+                        <i class="fas fa-table mr-2 text-indigo-500"></i>
+                        <span id="currentTableName">Table</span>
+                        <span id="currentRowCount" class="ml-3 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">0 rows</span>
+                    </h2>
+                </div>
+
+                <div class="w-full sm:w-72 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fas fa-search text-xs"></i>
+                    </div>
+                    <input type="text" id="searchInput" oninput="filterTable()" placeholder="Search in this table..." class="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto max-h-[650px]" id="tableContainer">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        Project Progress Monitoring & Evaluation System &bull; UN SDG 9 Aligned
+    </footer>
+
+    <!-- Data Injection -->
+    <script>
+        const rawDbData = {"academic_terms": {"columns": ["id", "term_name", "start_date", "end_date", "is_current", "created_by"], "rows": [["1", "Academic Year 2025-2026", "2025-08-01", "2026-05-30", "1", "1"]], "count": 1}, "activity_logs": {"columns": ["id", "user_id", "action", "entity_type", "entity_id", "details", "ip_address", "created_at"], "rows": [["1", "2", "evaluate_submission", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "Evaluated Milestone 3 for Team Agrotech Innovators with 94%", "127.0.0.1", "2026-10-04 19:45:14.716170"], ["2", "2", "review_submission", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "Approved Milestone 3 deliverable for Team Kavach Mobility", "127.0.0.1", "2026-10-04 19:45:14.716171"], ["3", "1", "system_config", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "Updated National Institutional Evaluation Rubric weightages", "127.0.0.1", "2026-10-04 19:45:14.716171"], ["4", "3", "submit_milestone", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "Submitted Milestone 4 Final Defense documentation", "127.0.0.1", "2026-10-04 19:45:14.716172"], ["5", "2", "meeting_logged", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "Completed bi-weekly review meeting with Team AquaRobotics", "127.0.0.1", "2026-10-04 19:45:14.716172"], ["6", "3", "submit_milestone", "student.submit_milestone", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "127.0.0.1", "2026-10-04 19:45:15.641885"], ["7", "3", "submit_milestone", "student.submit_milestone", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "127.0.0.1", "2026-10-04 19:45:15.649715"], ["8", "2", "evaluate_submission", "faculty.evaluate_submission", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "127.0.0.1", "2026-10-04 19:45:15.902210"], ["9", "2", "evaluate_submission", "faculty.evaluate_submission", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "127.0.0.1", "2026-10-04 19:45:15.912325"]], "count": 9}, "departments": {"columns": ["id", "name", "code", "head_of_department_id"], "rows": [["1", "Computer Science & Engineering", "CSE", "2"], ["2", "Information Technology", "IT", "2"], ["3", "Electronics & Robotics", "ECE", "2"], ["4", "Academic Administration", "ADM", "<span class=\"text-gray-400 italic\">NULL</span>"]], "count": 4}, "evaluation_scores": {"columns": ["id", "submission_id", "rubric_criteria_id", "evaluator_id", "marks_obtained", "remarks", "evaluated_at"], "rows": [["1", "1", "1", "2", "9.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.705220"], ["2", "1", "2", "2", "9.0", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.705222"], ["3", "1", "3", "2", "9.5", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.705222"], ["4", "1", "4", "2", "9.0", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.705223"], ["5", "2", "1", "2", "9.0", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.706494"], ["6", "2", "2", "2", "9.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.706496"], ["7", "2", "3", "2", "9.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.706497"], ["8", "2", "4", "2", "9.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.706498"], ["9", "3", "1", "2", "9.0", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.708426"], ["10", "3", "2", "2", "8.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.708427"], ["11", "3", "3", "2", "9.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.708428"], ["12", "3", "4", "2", "8.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.708428"], ["13", "4", "1", "2", "8.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.709014"], ["14", "4", "2", "2", "9.0", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.709015"], ["15", "4", "3", "2", "8.5", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.709016"], ["16", "4", "4", "2", "9.0", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.709016"], ["17", "5", "1", "2", "9.0", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.709527"], ["18", "5", "2", "2", "8.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.709528"], ["19", "5", "3", "2", "9.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.709529"], ["20", "5", "4", "2", "8.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.709529"], ["21", "6", "1", "2", "9.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.710158"], ["22", "6", "2", "2", "9.0", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.710158"], ["23", "6", "3", "2", "9.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.710159"], ["24", "6", "4", "2", "9.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.710159"], ["25", "7", "1", "2", "8.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.711427"], ["26", "7", "2", "2", "8.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.711428"], ["27", "7", "3", "2", "8.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.711428"], ["28", "7", "4", "2", "8.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.711428"], ["29", "8", "1", "2", "8.0", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.711881"], ["30", "8", "2", "2", "8.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.711882"], ["31", "8", "3", "2", "8.5", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.711883"], ["32", "8", "4", "2", "8.0", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.711883"], ["33", "10", "1", "2", "8.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.713356"], ["34", "10", "2", "2", "8.0", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.713357"], ["35", "10", "3", "2", "8.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.713358"], ["36", "10", "4", "2", "8.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.713359"], ["37", "12", "1", "2", "9.0", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.714803"], ["38", "12", "2", "2", "8.5", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.714804"], ["39", "12", "3", "2", "9.0", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.714805"], ["40", "12", "4", "2", "9.0", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.714805"], ["41", "13", "1", "2", "8.5", "Demonstrated high engineering fidelity in technical depth & innovation.", "2026-10-04 19:45:14.715272"], ["42", "13", "2", "2", "9.0", "Demonstrated high engineering fidelity in implementation & code quality.", "2026-10-04 19:45:14.715272"], ["43", "13", "3", "2", "8.5", "Demonstrated high engineering fidelity in documentation & srs standards.", "2026-10-04 19:45:14.715273"], ["44", "13", "4", "2", "8.5", "Demonstrated high engineering fidelity in presentation & viva defense.", "2026-10-04 19:45:14.715273"], ["45", "15", "1", "2", "9.5", "Excellent model accuracy and innovative dataset augmentation.", "2026-10-04 19:45:15.913774"], ["46", "15", "2", "2", "9.0", "Clean code structure and solid API endpoints.", "2026-10-04 19:45:15.914128"], ["47", "15", "3", "2", "8.5", "Good documentation, add latency benchmarks in final phase.", "2026-10-04 19:45:15.914321"], ["48", "15", "4", "2", "9.0", "Working prototype demo verified.", "2026-10-04 19:45:15.914460"]], "count": 48}, "feedback_logs": {"columns": ["id", "submission_id", "author_id", "feedback_type", "content", "is_private", "created_at"], "rows": [["1", "1", "2", "approval", "Approved with commendation. Excellent progress on Milestone 1: Project Synopsis & Architecture.", "0", "2026-10-04 19:45:14.705710"], ["2", "2", "2", "approval", "Approved with commendation. Excellent progress on Milestone 2: Database Schema & Low-Level Design.", "0", "2026-10-04 19:45:14.706651"], ["3", "3", "2", "approval", "Approved with commendation. Excellent progress on Milestone 1: Project Synopsis & Architecture.", "0", "2026-10-04 19:45:14.708573"], ["4", "4", "2", "approval", "Approved with commendation. Excellent progress on Milestone 2: Database Schema & Low-Level Design.", "0", "2026-10-04 19:45:14.709101"], ["5", "5", "2", "approval", "Approved with commendation. Excellent progress on Milestone 3: Implementation & Prototype Core.", "0", "2026-10-04 19:45:14.709610"], ["6", "6", "2", "approval", "Approved with commendation. Excellent progress on Milestone 4: Final Verification, Testing & Defense.", "0", "2026-10-04 19:45:14.710245"], ["7", "7", "2", "approval", "Approved with commendation. Excellent progress on Milestone 1: Project Synopsis & Architecture.", "0", "2026-10-04 19:45:14.711500"], ["8", "8", "2", "approval", "Approved with commendation. Excellent progress on Milestone 2: Database Schema & Low-Level Design.", "0", "2026-10-04 19:45:14.711950"], ["9", "10", "2", "approval", "Approved with commendation. Excellent progress on Milestone 1: Project Synopsis & Architecture.", "0", "2026-10-04 19:45:14.713453"], ["10", "12", "2", "approval", "Approved with commendation. Excellent progress on Milestone 1: Project Synopsis & Architecture.", "0", "2026-10-04 19:45:14.714883"], ["11", "13", "2", "approval", "Approved with commendation. Excellent progress on Milestone 2: Database Schema & Low-Level Design.", "0", "2026-10-04 19:45:14.715342"], ["12", "15", "2", "comment", "Outstanding progress! Prototype meets all criteria for Milestone 3. Proceed to final presentation.", "0", "2026-10-04 19:45:15.916590"]], "count": 12}, "meeting_logs": {"columns": ["id", "team_id", "scheduled_by", "meeting_date", "duration_minutes", "agenda", "minutes", "attendees_count", "status", "created_at"], "rows": [["1", "1", "2", "2026-09-28 00:00:00.000000", "45", "Sprint review and architectural audit for Team Agrotech Innovators.", "Reviewed sprint velocity, verified experimental benchmarks, and resolved API integration blockers.", "<span class=\"text-gray-400 italic\">NULL</span>", "completed", "2026-10-04 19:45:14.706994"], ["2", "2", "2", "2026-09-28 00:00:00.000000", "45", "Sprint review and architectural audit for Team Kavach Mobility.", "Reviewed sprint velocity, verified experimental benchmarks, and resolved API integration blockers.", "<span class=\"text-gray-400 italic\">NULL</span>", "completed", "2026-10-04 19:45:14.710288"], ["3", "3", "2", "2026-09-28 00:00:00.000000", "45", "Sprint review and architectural audit for Team AquaRobotics.", "Reviewed sprint velocity, verified experimental benchmarks, and resolved API integration blockers.", "<span class=\"text-gray-400 italic\">NULL</span>", "completed", "2026-10-04 19:45:14.712238"], ["4", "4", "2", "2026-09-28 00:00:00.000000", "45", "Sprint review and architectural audit for Team UrjaGrid.", "Reviewed sprint velocity, verified experimental benchmarks, and resolved API integration blockers.", "<span class=\"text-gray-400 italic\">NULL</span>", "completed", "2026-10-04 19:45:14.713752"], ["5", "5", "2", "2026-09-28 00:00:00.000000", "45", "Sprint review and architectural audit for Team Swasthya Tech.", "Reviewed sprint velocity, verified experimental benchmarks, and resolved API integration blockers.", "<span class=\"text-gray-400 italic\">NULL</span>", "completed", "2026-10-04 19:45:14.716348"]], "count": 5}, "milestones": {"columns": ["id", "title", "description", "milestone_order", "academic_term_id", "deadline", "weightage_percent", "is_mandatory", "created_by", "created_at"], "rows": [["1", "Milestone 1: Project Synopsis & Architecture", "System architecture diagram, SRS specification, feasibility study, and literature survey.", "1", "1", "2025-09-20 00:00:00.000000", "10.0", "1", "1", "2026-10-04 19:45:14.693393"], ["2", "Milestone 2: Database Schema & Low-Level Design", "3NF Normalized MySQL DDL schema, ER diagram, module interaction flow, and API contracts.", "2", "1", "2025-11-15 00:00:00.000000", "15.0", "1", "1", "2026-10-04 19:45:14.694019"], ["3", "Milestone 3: Implementation & Prototype Core", "Functional core backend services, machine learning model weights, REST endpoints, and prototype UI.", "3", "1", "2026-01-25 00:00:00.000000", "20.0", "1", "1", "2026-10-04 19:45:14.694363"], ["4", "Milestone 4: Final Verification, Testing & Defense", "End-to-end integration testing, performance benchmarks, final defense presentation, and thesis report.", "4", "1", "2026-04-15 00:00:00.000000", "25.0", "1", "1", "2026-10-04 19:45:14.694668"]], "count": 4}, "notifications": {"columns": ["id", "user_id", "title", "message", "notification_type", "is_read", "related_entity_type", "related_entity_id", "created_at"], "rows": [["1", "2", "New Submission", "Adarsh Katiyar submitted: Milestone 3: Implementation & Prototype Core", "submission", "0", "submission", "<span class=\"text-gray-400 italic\">NULL</span>", "2026-10-04 19:45:15.654580"], ["2", "3", "Evaluation Completed", "Your submission has been evaluated. Score: 90.0% (Grade: A+)", "approval", "0", "submission", "15", "2026-10-04 19:45:15.917481"]], "count": 2}, "projects": {"columns": ["id", "team_id", "title", "abstract", "objectives", "domain", "technology_stack", "sdg_alignment", "status", "approved_by", "approved_at", "created_at", "updated_at"], "rows": [["1", "1", "AI-Driven Crop Disease Detection & Advisory System (Krishi-Drishti)", "Deep learning edge-computing system utilizing lightweight CNN architectures (MobileNetV3) deployed on low-power devices for real-time foliar pathology identification in rural Indian farms.", "1. Train CNN on 54,000 foliar pathology images.\n2. Achieve >94% validation accuracy.\n3. Build low-latency Flask REST API for edge inference.", "Computer Science & Engineering", "Python, Flask, PyTorch, MySQL, Tailwind CSS", "UN SDG 9: Industry, Innovation & Infrastructure", "approved", "2", "2026-07-06 19:45:14.082494", "2026-10-04 19:45:14.701972", "2026-10-04 19:45:14.701977"], ["2", "2", "Kavach: Smart Highway Telemetry & Collision Prevention System", "V2X cellular telemetry and ultrasonic radar sensor array integrating Kalman filters to prevent multi-vehicle highway pile-ups and automate SOS geolocation alerts.", "1. Design low-latency V2X telemetry transceiver.\n2. Implement predictive collision trajectory algorithm.\n3. Integrate automated emergency response dispatch API.", "Information Technology", "Python, Flask, PyTorch, MySQL, Tailwind CSS", "UN SDG 9: Industry, Innovation & Infrastructure", "approved", "2", "2026-07-06 19:45:14.082494", "2026-10-04 19:45:14.707849", "2026-10-04 19:45:14.707850"], ["3", "3", "Jal-Drishti: Autonomous River Water Quality Monitoring Drone", "Autonomous aquatic drone catamaran equipped with multi-parameter sensor arrays (pH, Turbidity, Dissolved Oxygen) and LoRaWAN long-range telemetry for continuous Ganga basin pollution mapping.", "1. Construct solar-powered autonomous catamaran hull.\n2. Calibrate sensor telemetry pipeline over 15km LoRaWAN link.\n3. Create real-time GIS river pollution heat-map dashboard.", "Electronics & Robotics", "Python, Flask, PyTorch, MySQL, Tailwind CSS", "UN SDG 9: Industry, Innovation & Infrastructure", "approved", "2", "2026-07-06 19:45:14.082494", "2026-10-04 19:45:14.710852", "2026-10-04 19:45:14.710853"], ["4", "4", "Urja-Net: Decentralized Peer-to-Peer Solar Microgrid Trading", "Smart-contract enabled microgrid market platform enabling rooftop solar prosumers to trade surplus kilowatt-hours securely with dynamic local algorithmic load balancing.", "1. Formulate dynamic pricing smart contract.\n2. Build IoT bidirectional smart meter telemetry bridge.\n3. Simulate grid stability under volatile peak demand.", "Computer Science & Engineering", "Python, Flask, PyTorch, MySQL, Tailwind CSS", "UN SDG 9: Industry, Innovation & Infrastructure", "approved", "2", "2026-07-06 19:45:14.082494", "2026-10-04 19:45:14.712890", "2026-10-04 19:45:14.712891"], ["5", "5", "Swasthya-AI: Deep Learning Diagnostic Scanner for Rural Health Kiosks", "Affordable computer-vision medical kiosk for rapid screening of diabetic retinopathy and pulmonary radiography abnormalities in underserved rural clinics.", "1. Train multi-modal CNN for retinal fundus and chest X-ray screening.\n2. Package into offline touchscreen kiosk system.\n3. Validate diagnostic sensitivity with clinical gold standards.", "Information Technology", "Python, Flask, PyTorch, MySQL, Tailwind CSS", "UN SDG 9: Industry, Innovation & Infrastructure", "approved", "2", "2026-07-06 19:45:14.082494", "2026-10-04 19:45:14.714298", "2026-10-04 19:45:14.714299"]], "count": 5}, "roles": {"columns": ["id", "role_name", "description", "created_at"], "rows": [["1", "admin", "System Administrator with full institutional governance", "2026-10-04 19:45:14.080466"], ["2", "faculty", "Faculty member who guides and evaluates capstone projects", "2026-10-04 19:45:14.081011"], ["3", "student", "Student enrolled in capstone project groups", "2026-10-04 19:45:14.081241"]], "count": 3}, "rubric_criteria": {"columns": ["id", "rubric_template_id", "criterion_name", "max_marks", "weightage", "description", "display_order"], "rows": [["1", "1", "Technical Depth & Innovation", "10.0", "25.0", "Originality of solution, technological complexity, and modern methodology.", "1"], ["2", "1", "Implementation & Code Quality", "10.0", "40.0", "System architecture, clean modular code, API correctness, and test coverage.", "2"], ["3", "1", "Documentation & SRS Standards", "10.0", "20.0", "Completeness of diagrams, technical documentation, and IEEE reporting standards.", "3"], ["4", "1", "Presentation & Viva Defense", "10.0", "15.0", "Clarity of live demonstration, answers to technical cross-questions, and team coordination.", "4"]], "count": 4}, "rubric_templates": {"columns": ["id", "name", "description", "academic_term_id", "created_by", "is_active", "created_at"], "rows": [["1", "National Institutional Evaluation Rubric (NIRF/NBA)", "Comprehensive criterion-based institutional grading rubric.", "1", "1", "1", "2026-10-04 19:45:14.695833"]], "count": 1}, "submissions": {"columns": ["id", "project_id", "milestone_id", "submitted_by", "submission_text", "document_url", "repository_url", "status", "submitted_at", "reviewed_by", "reviewed_at", "revision_count", "created_at", "updated_at"], "rows": [["1", "1", "1", "3", "Formal deliverable submission for Milestone 1: Project Synopsis & Architecture. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-agrotech-innovators/m1-report.pdf", "https://github.com/academic-projects-2026/team-agrotech-innovators", "approved", "2026-07-16 19:45:14.082494", "2", "2026-07-18 19:45:14.082494", "0", "2026-10-04 19:45:14.704353", "2026-10-04 19:45:14.704357"], ["2", "1", "2", "3", "Formal deliverable submission for Milestone 2: Database Schema & Low-Level Design. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-agrotech-innovators/m2-report.pdf", "https://github.com/academic-projects-2026/team-agrotech-innovators", "approved", "2026-08-05 19:45:14.082494", "2", "2026-08-07 19:45:14.082494", "0", "2026-10-04 19:45:14.706131", "2026-10-04 19:45:14.706132"], ["3", "2", "1", "3", "Formal deliverable submission for Milestone 1: Project Synopsis & Architecture. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-kavach-mobility/m1-report.pdf", "https://github.com/academic-projects-2026/team-kavach-mobility", "approved", "2026-07-16 19:45:14.082494", "2", "2026-07-18 19:45:14.082494", "0", "2026-10-04 19:45:14.708151", "2026-10-04 19:45:14.708152"], ["4", "2", "2", "3", "Formal deliverable submission for Milestone 2: Database Schema & Low-Level Design. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-kavach-mobility/m2-report.pdf", "https://github.com/academic-projects-2026/team-kavach-mobility", "approved", "2026-08-05 19:45:14.082494", "2", "2026-08-07 19:45:14.082494", "0", "2026-10-04 19:45:14.708797", "2026-10-04 19:45:14.708798"], ["5", "2", "3", "3", "Formal deliverable submission for Milestone 3: Implementation & Prototype Core. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-kavach-mobility/m3-report.pdf", "https://github.com/academic-projects-2026/team-kavach-mobility", "approved", "2026-08-25 19:45:14.082494", "2", "2026-08-27 19:45:14.082494", "0", "2026-10-04 19:45:14.709291", "2026-10-04 19:45:14.709292"], ["6", "2", "4", "3", "Formal deliverable submission for Milestone 4: Final Verification, Testing & Defense. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-kavach-mobility/m4-report.pdf", "https://github.com/academic-projects-2026/team-kavach-mobility", "approved", "2026-09-14 19:45:14.082494", "2", "2026-09-16 19:45:14.082494", "0", "2026-10-04 19:45:14.709913", "2026-10-04 19:45:14.709913"], ["7", "3", "1", "3", "Formal deliverable submission for Milestone 1: Project Synopsis & Architecture. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-aquarobotics/m1-report.pdf", "https://github.com/academic-projects-2026/team-aquarobotics", "approved", "2026-07-16 19:45:14.082494", "2", "2026-07-18 19:45:14.082494", "0", "2026-10-04 19:45:14.711230", "2026-10-04 19:45:14.711230"], ["8", "3", "2", "3", "Formal deliverable submission for Milestone 2: Database Schema & Low-Level Design. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-aquarobotics/m2-report.pdf", "https://github.com/academic-projects-2026/team-aquarobotics", "approved", "2026-08-05 19:45:14.082494", "2", "2026-08-07 19:45:14.082494", "0", "2026-10-04 19:45:14.711694", "2026-10-04 19:45:14.711695"], ["9", "3", "3", "3", "Draft deliverables for Milestone 3: Implementation & Prototype Core uploaded for faculty review and evaluation.", "https://drive.google.com/institutional-repo/team-aquarobotics/draft-report.pdf", "https://github.com/academic-projects-2026/team-aquarobotics/tree/dev", "under_review", "2026-10-02 19:45:14.082494", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "0", "2026-10-04 19:45:14.712292", "2026-10-04 19:45:14.712292"], ["10", "4", "1", "3", "Formal deliverable submission for Milestone 1: Project Synopsis & Architecture. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-urjagrid/m1-report.pdf", "https://github.com/academic-projects-2026/team-urjagrid", "approved", "2026-07-16 19:45:14.082494", "2", "2026-07-18 19:45:14.082494", "0", "2026-10-04 19:45:14.713118", "2026-10-04 19:45:14.713118"], ["11", "4", "2", "3", "Draft deliverables for Milestone 2: Database Schema & Low-Level Design uploaded for faculty review and evaluation.", "https://drive.google.com/institutional-repo/team-urjagrid/draft-report.pdf", "https://github.com/academic-projects-2026/team-urjagrid/tree/dev", "submitted", "2026-10-02 19:45:14.082494", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "0", "2026-10-04 19:45:14.713799", "2026-10-04 19:45:14.713800"], ["12", "5", "1", "3", "Formal deliverable submission for Milestone 1: Project Synopsis & Architecture. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-swasthya-tech/m1-report.pdf", "https://github.com/academic-projects-2026/team-swasthya-tech", "approved", "2026-07-16 19:45:14.082494", "2", "2026-07-18 19:45:14.082494", "0", "2026-10-04 19:45:14.714510", "2026-10-04 19:45:14.714511"], ["13", "5", "2", "3", "Formal deliverable submission for Milestone 2: Database Schema & Low-Level Design. Comprehensive engineering documentation, architecture diagrams, and repository code links attached.", "https://drive.google.com/institutional-repo/team-swasthya-tech/m2-report.pdf", "https://github.com/academic-projects-2026/team-swasthya-tech", "approved", "2026-08-05 19:45:14.082494", "2", "2026-08-07 19:45:14.082494", "0", "2026-10-04 19:45:14.715075", "2026-10-04 19:45:14.715076"], ["14", "5", "3", "3", "Draft deliverables for Milestone 3: Implementation & Prototype Core uploaded for faculty review and evaluation.", "https://drive.google.com/institutional-repo/team-swasthya-tech/draft-report.pdf", "https://github.com/academic-projects-2026/team-swasthya-tech/tree/dev", "under_review", "2026-10-02 19:45:14.082494", "<span class=\"text-gray-400 italic\">NULL</span>", "<span class=\"text-gray-400 italic\">NULL</span>", "0", "2026-10-04 19:45:14.716398", "2026-10-04 19:45:14.716399"], ["15", "1", "3", "3", "Completed CNN model training on 54,000 leaf images reaching 94.2% test accuracy. Built Flask inference API and prototype UI.", "https://drive.google.com/sample-m3-prototype-report.pdf", "https://github.com/tech-innovators/crop-disease-detection/tree/prototype-v1", "approved", "2026-10-04 19:45:15.651627", "2", "2026-10-04 19:45:15.915435", "0", "2026-10-04 19:45:15.652004", "2026-10-04 19:45:15.915649"]], "count": 15}, "team_members": {"columns": ["id", "team_id", "user_id", "role_in_team", "joined_at"], "rows": [["1", "1", "3", "Leader", "2026-10-04 19:45:14.699193"], ["2", "2", "3", "Leader", "2026-10-04 19:45:14.707606"], ["3", "3", "3", "Leader", "2026-10-04 19:45:14.710665"], ["4", "4", "3", "Leader", "2026-10-04 19:45:14.712688"], ["5", "5", "3", "Leader", "2026-10-04 19:45:14.714136"]], "count": 5}, "teams": {"columns": ["id", "team_name", "academic_term_id", "department_id", "guide_id", "max_members", "created_at"], "rows": [["1", "Team Agrotech Innovators", "1", "1", "2", "4", "2026-10-04 19:45:14.698413"], ["2", "Team Kavach Mobility", "1", "2", "2", "4", "2026-10-04 19:45:14.707402"], ["3", "Team AquaRobotics", "1", "3", "2", "4", "2026-10-04 19:45:14.710520"], ["4", "Team UrjaGrid", "1", "1", "2", "4", "2026-10-04 19:45:14.712527"], ["5", "Team Swasthya Tech", "1", "2", "2", "4", "2026-10-04 19:45:14.714000"]], "count": 5}, "users": {"columns": ["id", "email", "password_hash", "first_name", "last_name", "role_id", "department", "enrollment_number", "is_active", "can_evaluate", "can_submit", "permission_level", "last_seen_at", "created_at", "updated_at"], "rows": [["1", "admin@university.edu", "$2b$12$QiI.z/YU00aHzpGBKUb7.OyPBDTB2ZOJafKz34O5w5zGqbQC1NofK", "Admin", "", "1", "Academic Administration", "<span class=\"text-gray-400 italic\">NULL</span>", "1", "1", "1", "full", "2026-10-05 05:08:01.131293", "2026-10-04 19:45:14.288450", "2026-10-05 05:08:01.132247"], ["2", "dr.verma@university.edu", "$2b$12$htBPf5QXg2x/bSgtGq02/OdBntaiS7XCT0qbCaVKvq03tnG3x81yy", "Dr. Ankit", "Verma", "2", "Computer Science & Engineering", "<span class=\"text-gray-400 italic\">NULL</span>", "1", "1", "0", "full", "2026-10-05 05:07:40.066284", "2026-10-04 19:45:14.489720", "2026-10-05 05:07:40.067025"], ["3", "student1@university.edu", "$2b$12$rBpIoABc.S2nOiffGZphWOaOZqCwrux6ioRJ7UyY09t4/Qa7koysa", "Adarsh", "Katiyar", "3", "Computer Science & Engineering", "CSE2026001", "1", "0", "1", "standard", "2026-10-04 19:45:16.160627", "2026-10-04 19:45:14.690017", "2026-10-04 19:45:16.160711"]], "count": 3}};
+        let activeTable = Object.keys(rawDbData)[0] || '';
+
+        function renderSidebar() {
+            const listEl = document.getElementById('tableList');
+            listEl.innerHTML = '';
+
+            Object.keys(rawDbData).forEach(tableName => {
+                const info = rawDbData[tableName];
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex justify-between items-center table-tab ${tableName === activeTable ? 'active' : 'text-slate-600 hover:bg-slate-100'}`;
+                btn.innerHTML = `
+                    <span class="truncate"><i class="fas fa-table text-xs mr-2 opacity-60"></i>${tableName}</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full ${tableName === activeTable ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600'} font-medium">${info.count}</span>
+                `;
+                btn.onclick = () => {
+                    activeTable = tableName;
+                    document.getElementById('searchInput').value = '';
+                    renderSidebar();
+                    renderTable();
+                };
+                listEl.appendChild(btn);
+            });
+        }
+
+        function renderTable(filterText = '') {
+            if (!activeTable || !rawDbData[activeTable]) return;
+
+            const info = rawDbData[activeTable];
+            document.getElementById('currentTableName').textContent = activeTable;
+            document.getElementById('currentRowCount').textContent = `${info.count} records`;
+
+            const container = document.getElementById('tableContainer');
+            
+            if (info.count === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center text-slate-400">
+                        <i class="fas fa-inbox text-4xl mb-3 opacity-40"></i>
+                        <p class="font-medium text-sm">Table '${activeTable}' is empty</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const lowerFilter = filterText.toLowerCase();
+            const filteredRows = info.rows.filter(row => {
+                if (!lowerFilter) return true;
+                return row.some(cell => cell.toLowerCase().includes(lowerFilter));
+            });
+
+            let html = `
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold sticky top-0 z-10">
+                            ${info.columns.map(col => `<th class="px-4 py-3 whitespace-nowrap bg-slate-100">${col}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+            `;
+
+            if (filteredRows.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="${info.columns.length}" class="p-8 text-center text-slate-400">
+                            No records matching "${filterText}"
+                        </td>
+                    </tr>
+                `;
+            } else {
+                filteredRows.forEach((row, idx) => {
+                    html += `<tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} hover:bg-indigo-50/40 transition-colors">`;
+                    row.forEach(cell => {
+                        let cellContent = cell;
+                        if (cell.length > 100) {
+                            cellContent = `<span title="${cell.replace(/"/g, '&quot;')}">${cell.substring(0, 95)}...</span>`;
+                        }
+                        html += `<td class="px-4 py-3 whitespace-nowrap text-slate-700 font-mono">${cellContent}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+            }
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function filterTable() {
+            const text = document.getElementById('searchInput').value;
+            renderTable(text);
+        }
+
+        // Initial setup
+        renderSidebar();
+        renderTable();
+    </script>
+</body>
+</html>

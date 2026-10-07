@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My Guided Project Teams - Faculty{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Assigned Capstone Project Teams</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-800">{{ teams | length }} Active Teams</span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mt-1">Review team progress, inspect milestone deliverables, and evaluate rubrics scores.</p>
+    </div>
+    <a href="{{ url_for('faculty.reviews_inbox') }}" class="btn-shimmer px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition-all flex items-center">
+        <i class="fas fa-clipboard-check mr-2"></i>Review Submissions Inbox
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for team in teams %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col justify-between hover-glow card-interactive transition-all">
+        <div>
+            <div class="flex justify-between items-start mb-3">
+                <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-800">
+                    {{ team.department.code if team.department else 'CSE' }}
+                </span>
+                <span class="text-xs text-slate-600 dark:text-slate-400 font-mono font-medium">Guide: {{ team.guide.full_name if team.guide else 'Dr. Ankit Verma' }}</span>
+            </div>
+
+            <h3 class="text-lg font-extrabold text-slate-900 dark:text-white mb-1 leading-snug">
+                {{ team.project.title if team.project else team.team_name }}
+            </h3>
+            <p class="text-xs font-bold text-indigo-700 dark:text-indigo-400 mb-3">{{ team.team_name }}</p>
+
+            <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 mb-4 leading-relaxed font-normal">
+                {{ team.project.abstract if team.project else 'Capstone project under active development.' }}
+            </p>
+
+            <!-- Members -->
+            <div class="mb-4">
+                <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-2">Team Members:</span>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for m in team.members %}
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs bg-slate-100 border border-slate-300 text-slate-800 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 font-medium shadow-2xs">
+                        <i class="fas fa-user-circle mr-1.5 text-indigo-600 dark:text-indigo-400"></i>
+                        {{ m.user.full_name }}
+                        {% if m.role_in_team == 'Leader' %}
+                            <span class="ml-1 text-[9px] font-extrabold text-amber-700 dark:text-amber-400">(Lead)</span>
+                        {% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-600 dark:text-slate-300">
+                <i class="fas fa-check-circle text-emerald-600 dark:text-emerald-400 mr-1"></i> Status: <strong class="text-slate-900 dark:text-white font-bold">{{ team.project.status | capitalize if team.project else 'Active' }}</strong>
+            </span>
+            <a href="{{ url_for('faculty.team_detail', id=team.id) }}" class="btn-shimmer px-3.5 py-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 dark:bg-slate-800 dark:hover:bg-indigo-600 dark:text-slate-100 dark:border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center shadow-xs">
+                <span>View Details</span>
+                <i class="fas fa-arrow-right ml-1.5 text-[10px]"></i>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

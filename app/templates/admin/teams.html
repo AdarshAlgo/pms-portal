@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Cohort Teams & Mentorship Management - Institutional Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Cohort Teams &amp; Guide Governance</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-800">
+                Term: {{ current_term.name if current_term else 'Active Academic Cycle' }}
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Manage project groups, audit membership distributions, and reassign faculty mentors across active cohorts.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs">
+            <i class="fas fa-layer-group text-indigo-500 mr-1.5"></i> Total Teams: <strong class="text-slate-900 dark:text-white">{{ teams | length }}</strong>
+        </span>
+    </div>
+</div>
+
+<!-- Quick Stat Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Teams</span>
+            <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="text-2xl font-black text-slate-900 dark:text-white mt-2">{{ teams | length }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Registered capstone groups</div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Cohorts</span>
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">
+            {{ teams | selectattr('status', 'equalto', 'active') | list | length }}
+        </div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Cleared for evaluation</div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Approved Proposals</span>
+            <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+        </div>
+        <div class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-2">
+            {{ teams | selectattr('project') | list | length }}
+        </div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">With linked capstone project</div>
+    </div>
+
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+        <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Faculty Mentors</span>
+            <div class="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+        </div>
+        <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2">{{ faculties | length }}</div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active supervisors available</div>
+    </div>
+</div>
+
+<!-- Master Teams Table -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h3 class="font-extrabold text-slate-900 dark:text-white text-base">Registered Capstone Cohorts</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Filter, inspect team composition, and reassign faculty mentors with audit logs.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-500 dark:text-slate-400">Total: <strong>{{ teams | length }}</strong></span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                    <th class="py-3.5 px-6">Team &amp; Department</th>
+                    <th class="py-3.5 px-6">Capstone Project</th>
+                    <th class="py-3.5 px-6">Members</th>
+                    <th class="py-3.5 px-6">Assigned Mentor</th>
+                    <th class="py-3.5 px-6 text-center">Status</th>
+                    <th class="py-3.5 px-6 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                {% for team in teams %}
+                <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
+                    <!-- Team & Dept -->
+                    <td class="py-4 px-6 min-w-[200px]">
+                        <div class="font-extrabold text-slate-900 dark:text-white text-sm">{{ team.team_name }}</div>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                {{ team.department.code if team.department else 'CSE' }}
+                            </span>
+                            <span class="text-[11px] text-slate-400 font-mono">ID: #{{ team.id }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Capstone Project -->
+                    <td class="py-4 px-6 min-w-[240px]">
+                        {% if team.project %}
+                            <div class="font-bold text-slate-800 dark:text-slate-200 text-xs">{{ team.project.title }}</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{{ team.project.domain }}</div>
+                        {% else %}
+                            <span class="text-xs text-slate-400 italic">No proposal linked yet</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Members -->
+                    <td class="py-4 px-6">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-user-friends mr-1 text-indigo-500"></i> {{ team.members | length }} / {{ team.max_members }}
+                            </span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                            Lead: <strong class="text-slate-700 dark:text-slate-300">{{ team.leader.display_name if team.leader else 'Unassigned' }}</strong>
+                        </div>
+                    </td>
+
+                    <!-- Assigned Guide -->
+                    <td class="py-4 px-6 min-w-[200px]">
+                        {% if team.guide %}
+                            <div class="flex items-center space-x-2">
+                                <div class="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs shrink-0">
+                                    {{ team.guide.first_name[0] }}
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900 dark:text-white">{{ team.guide.full_name }}</div>
+                                    <div class="text-[10px] text-indigo-600 dark:text-indigo-400">{{ team.guide.email }}</div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300">
+                                No Mentor Assigned
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Status -->
+                    <td class="py-4 px-6 text-center whitespace-nowrap">
+                        {% if team.status == 'active' %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                            </span>
+                        {% elif team.status == 'approved' %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Approved
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> {{ team.status | capitalize }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Actions -->
+                    <td class="py-4 px-6 text-right whitespace-nowrap">
+                        <button onclick="openReassignModal({{ team.id }}, '{{ team.team_name | escape }}', {{ team.guide_id if team.guide_id else 'null' }})"
+                                class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white dark:bg-slate-800 dark:hover:bg-indigo-600 dark:text-indigo-300 rounded-xl text-xs font-bold border border-indigo-200 dark:border-slate-700 transition-all inline-flex items-center">
+                            <i class="fas fa-user-edit mr-1.5"></i> Reassign Mentor
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Reassign Team Guide -->
+<div id="reassignModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative">
+        <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div>
+                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">Reassign Faculty Mentor</h3>
+                <p id="modalTeamName" class="text-xs text-indigo-600 dark:text-indigo-400 font-bold mt-0.5"></p>
+            </div>
+            <button onclick="closeReassignModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="reassignForm" method="POST" action="" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+            <div>
+                <label for="guide_id" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Select New Faculty Supervisor <span class="text-rose-500">*</span>
+                </label>
+                <select id="modalGuideSelect" name="guide_id" required
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
+                    <option value="">-- Choose Faculty Member --</option>
+                    {% for fac in faculties %}
+                    <option value="{{ fac.id }}">{{ fac.full_name }} ({{ fac.department or 'CSE' }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="reason" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Administrative Rationale / Reason
+                </label>
+                <textarea name="reason" rows="3" placeholder="e.g. Workload quota rebalancing or domain specialization alignment..."
+                          class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs leading-relaxed focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end space-x-2">
+                <button type="button" onclick="closeReassignModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-shimmer px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/30">
+                    Confirm Reassignment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openReassignModal(teamId, teamName, currentGuideId) {
+    document.getElementById('modalTeamName').textContent = 'Team: ' + teamName;
+    document.getElementById('reassignForm').action = '/admin/team/' + teamId + '/reassign-guide';
+    const select = document.getElementById('modalGuideSelect');
+    if (currentGuideId) {
+        select.value = currentGuideId;
+    } else {
+        select.value = '';
+    }
+    document.getElementById('reassignModal').classList.remove('hidden');
+}
+
+function closeReassignModal() {
+    document.getElementById('reassignModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

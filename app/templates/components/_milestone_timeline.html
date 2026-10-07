@@ -1,0 +1,41 @@
+<div class="relative border-l border-gray-200 ml-3">
+    {% for node in timeline_nodes %}
+        {% set status_color = 'gray' %}
+        {% set status_icon = 'fa-circle' %}
+        
+        {% if node.status == 'approved' %}
+            {% set status_color = 'emerald' %}
+            {% set status_icon = 'fa-check' %}
+        {% elif node.status == 'under_review' %}
+            {% set status_color = 'amber' %}
+            {% set status_icon = 'fa-hourglass-half' %}
+        {% elif node.status == 'revision_required' %}
+            {% set status_color = 'red' %}
+            {% set status_icon = 'fa-exclamation' %}
+        {% elif node.status == 'submitted' %}
+            {% set status_color = 'blue' %}
+            {% set status_icon = 'fa-paper-plane' %}
+        {% endif %}
+
+        <div class="mb-8 ml-6">
+            <span class="absolute flex items-center justify-center w-6 h-6 bg-{{ status_color }}-100 rounded-full -left-3 ring-8 ring-white">
+                <i class="fas {{ status_icon }} text-{{ status_color }}-500 text-xs"></i>
+            </span>
+            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900">
+                    {{ node.title }}
+                    {% if node.status != 'pending' %}
+                        <span class="bg-{{ status_color }}-100 text-{{ status_color }}-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full ml-3 uppercase">{{ node.status|replace('_', ' ') }}</span>
+                    {% endif %}
+                </h3>
+                <time class="block mb-2 text-sm font-normal leading-none text-gray-400">Due: {{ node.deadline }}</time>
+                <p class="text-sm font-normal text-gray-500">{{ node.description }}</p>
+                {% if node.score is defined and node.score is not none %}
+                    <div class="mt-3 inline-flex items-center text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-md">
+                        Score: {{ node.score }}%
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

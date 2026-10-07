@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Deliverable: {{ milestone.title | default('Milestone') }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center text-sm text-slate-500 dark:text-slate-400">
+    <a href="{{ url_for('student.dashboard') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-bold flex items-center transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Milestone Deliverable Submission</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                Gate #{{ milestone.milestone_order }}: {{ milestone.weightage_percent }}% Weightage
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-xs mt-1">Submit your engineering deliverables, code repository commits, and documentation archives for faculty evaluation.</p>
+    </div>
+</div>
+
+<!-- Effective Deadline Status Banner -->
+{% if effective_deadline %}
+    {% set now = now_utc if now_utc else None %}
+    <div class="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/60 mb-8 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <span class="text-xs font-bold text-indigo-950 dark:text-indigo-200">Official Milestone Deadline:</span>
+                <span class="text-xs font-mono font-black text-indigo-600 dark:text-indigo-400 ml-1">
+                    {{ effective_deadline.strftime('%b %d, %Y at %I:%M %p UTC') }}
+                </span>
+            </div>
+        </div>
+        <span class="px-3 py-1 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+            Evaluation Gatekeeper Active
+        </span>
+    </div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <!-- Form Area (2 cols) -->
+    <div class="lg:col-span-2">
+        <form action="{{ url_for('student.submit_milestone', milestone_id=milestone.id) }}"
+              method="POST"
+              enctype="multipart/form-data"
+              class="content-card bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+            <div class="p-6 md:p-8 space-y-6">
+                <!-- Text Submission -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
+                        Deliverable Summary &amp; Sprint Execution Remarks <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="submission_text" rows="5" required
+                              class="w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 p-3.5 text-xs leading-relaxed"
+                              placeholder="Provide a comprehensive technical overview of work completed for this milestone, including architecture decisions, algorithmic benchmarks, and test coverage...">{{ existing.submission_text if existing else '' }}</textarea>
+                </div>
+
+                <!-- URLs: Git Repository & External Cloud Docs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
+                            Repository URL (GitHub / GitLab)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fab fa-github text-sm"></i>
+                            </span>
+                            <input type="url" name="repository_url" value="{{ existing.repository_url if existing else (project.github_url if project else '') }}"
+                                   class="pl-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs font-mono"
+                                   placeholder="https://github.com/organization/repo">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
+                            Cloud Document URL (Google Drive / Overleaf)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i class="fas fa-link text-xs"></i>
+                            </span>
+                            <input type="url" name="document_url" value="{{ existing.document_url if existing else '' }}"
+                                   class="pl-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs"
+                                   placeholder="https://docs.google.com/document/d/...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive File Upload Drag-and-Drop Area -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
+                        Deliverable File Attachment (PDF, ZIP, DOCX - Max 32MB)
+                    </label>
+                    <div id="dropzoneArea"
+                         onclick="document.getElementById('file_attachment').click()"
+                         class="mt-1 flex flex-col items-center justify-center px-6 pt-7 pb-7 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-3xl hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition-all cursor-pointer">
+                        <input type="file" id="file_attachment" name="file_attachment" accept=".pdf,.zip,.docx,.pptx" class="hidden" onchange="displaySelectedFileName(this)">
+                        <div class="space-y-2 text-center">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mx-auto shadow-inner">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="text-xs text-slate-600 dark:text-slate-300 font-semibold">
+                                <span class="text-indigo-600 dark:text-indigo-400 font-bold">Click to browse file</span> or drag &amp; drop
+                            </div>
+                            <p class="text-[11px] text-slate-400" id="fileChosenText">
+                                {% if existing and existing.document_url and existing.document_url.startswith('/static/uploads/') %}
+                                    Current attached file: <strong class="text-indigo-600">{{ existing.document_url.split('/')[-1] }}</strong>
+                                {% else %}
+                                    Supported: PDF, ZIP (source code archive), DOCX, PPTX (up to 32MB)
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons Footer -->
+            <div class="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end items-center space-x-3">
+                <a href="{{ url_for('student.dashboard') }}" class="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-shimmer px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all flex items-center">
+                    <i class="fas fa-paper-plane mr-2"></i> Submit Deliverable to Mentor
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Milestone Specifications & Rubric Sidebar (1 col) -->
+    <div class="space-y-6">
+        <!-- Milestone Card -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-black text-sm">
+                    M{{ milestone.milestone_order }}
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">{{ milestone.title }}</h4>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Phase Specification</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                {{ milestone.description }}
+            </p>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Total Contribution:</span>
+                    <span class="font-black text-indigo-600 dark:text-indigo-400 font-mono">{{ milestone.weightage_percent }}% of Course Grade</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Target Timeline:</span>
+                    <span class="font-bold text-slate-800 dark:text-slate-200 font-mono">{{ milestone.deadline.strftime('%b %d, %Y') if milestone.deadline else 'Flexible' }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Grading Mode:</span>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400">4-Tier NBA Rubrics</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Honor Invariant -->
+        <div class="bg-indigo-50/60 dark:bg-indigo-950/30 rounded-3xl p-6 border border-indigo-200/60 dark:border-indigo-800/40">
+            <h5 class="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center mb-2">
+                <i class="fas fa-certificate text-indigo-500 mr-2"></i> Academic Integrity
+            </h5>
+            <p class="text-[11px] text-indigo-700 dark:text-indigo-400 leading-relaxed">
+                By submitting this deliverable, you certify that all code repositories, dataset augmentations, and report artifacts are original intellectual work complying with institutional academic honesty policies.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function displaySelectedFileName(input) {
+    const textElem = document.getElementById('fileChosenText');
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        textElem.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fas fa-check-circle mr-1"></i> Selected: ${file.name} (${sizeMb} MB)</span>`;
+    }
+}
+</script>
+{% endblock %}

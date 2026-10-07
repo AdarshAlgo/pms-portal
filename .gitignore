@@ -1,0 +1,36 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Environment Secrets
+.env
+.env.local
+
+# Local SQLite Database Files
+instance/*.db
+*.sqlite3
+*.db
+*.sqlite
+
+# Local File Uploads (keep the folder structure via .gitkeep)
+static/uploads/*
+!static/uploads/.gitkeep
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+!app/static/uploads/submissions/
+app/static/uploads/submissions/*
+!app/static/uploads/submissions/.gitkeep
+
+# IDE, OS & Local Test Artifacts
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*_cookies.txt

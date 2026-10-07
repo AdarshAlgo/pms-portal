@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Tamper-Proof Institutional Audit Trail - Admin Governance{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Institutional Audit Trail</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-100 text-teal-800 border border-teal-300 dark:bg-teal-950/80 dark:text-teal-300 dark:border-teal-800">
+                Immutable Ledger
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Chronological, tamper-proof security log recording every rubric evaluation, deadline extension, mentor reassignment, and administrative clearance.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-2xs">
+            <i class="fas fa-database text-teal-500 mr-1.5"></i> Total Log Entries: <strong class="text-slate-900 dark:text-white">{{ logs.total }}</strong>
+        </span>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+        <label for="action" class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Action Filter:</label>
+        <select id="action" name="action" onchange="this.form.submit()"
+                class="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold">
+            <option value="all" {% if action_filter == 'all' %}selected{% endif %}>All System Events</option>
+            <option value="evaluate_submission" {% if action_filter == 'evaluate_submission' %}selected{% endif %}>Milestone Evaluations</option>
+            <option value="project_registration" {% if action_filter == 'project_registration' %}selected{% endif %}>Project Registrations</option>
+            <option value="grant_deadline_extension" {% if action_filter == 'grant_deadline_extension' %}selected{% endif %}>Deadline Extensions</option>
+            <option value="reassign_team_guide" {% if action_filter == 'reassign_team_guide' %}selected{% endif %}>Mentor Reassignments</option>
+            <option value="project_clearance_decision" {% if action_filter == 'project_clearance_decision' %}selected{% endif %}>Project Clearance Decisions</option>
+            <option value="dispatch_risk_warning" {% if action_filter == 'dispatch_risk_warning' %}selected{% endif %}>Risk Warning Dispatches</option>
+            <option value="system_settings_update" {% if action_filter == 'system_settings_update' %}selected{% endif %}>System Settings Changes</option>
+        </select>
+    </form>
+    <div class="text-xs text-slate-400 font-mono">
+        Showing Page {{ logs.page }} of {{ logs.pages or 1 }}
+    </div>
+</div>
+
+<!-- Audit Log Datatable -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 text-[10px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-black">
+                    <th class="py-3 px-6 whitespace-nowrap">Timestamp (UTC)</th>
+                    <th class="py-3 px-6 whitespace-nowrap">Actor / User</th>
+                    <th class="py-3 px-6 whitespace-nowrap">Action Type</th>
+                    <th class="py-3 px-6 whitespace-nowrap">Target Entity</th>
+                    <th class="py-3 px-6">Event Details</th>
+                    <th class="py-3 px-6 text-right whitespace-nowrap">Client IP</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for log in logs.items %}
+                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <!-- Timestamp -->
+                    <td class="py-3.5 px-6 whitespace-nowrap font-mono text-slate-500 dark:text-slate-400">
+                        {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}
+                    </td>
+
+                    <!-- Actor -->
+                    <td class="py-3.5 px-6 whitespace-nowrap">
+                        {% if log.user %}
+                        <div class="font-bold text-slate-900 dark:text-white">{{ log.user.full_name }}</div>
+                        <div class="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">{{ log.user.email }}</div>
+                        {% else %}
+                        <span class="text-slate-400 italic">System Automation</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Action -->
+                    <td class="py-3.5 px-6 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border {% if 'evaluate' in log.action %}bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800{% elif 'warn' in log.action %}bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800{% elif 'extension' in log.action %}bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800{% elif 'clearance' in log.action %}bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800{% else %}bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700{% endif %}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+
+                    <!-- Entity -->
+                    <td class="py-3.5 px-6 whitespace-nowrap font-mono text-slate-600 dark:text-slate-300">
+                        {{ log.entity_type or 'system' }} {% if log.entity_id %}#{{ log.entity_id }}{% endif %}
+                    </td>
+
+                    <!-- Details -->
+                    <td class="py-3.5 px-6 max-w-md">
+                        {% if log.details %}
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg font-mono text-[10px] text-slate-700 dark:text-slate-300 truncate max-w-xs sm:max-w-md">
+                            {{ log.details }}
+                        </div>
+                        {% else %}
+                        <span class="text-slate-400 text-[10px] italic">No parameters captured</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- IP -->
+                    <td class="py-3.5 px-6 text-right whitespace-nowrap font-mono text-slate-400 text-[10px]">
+                        {{ log.ip_address or '127.0.0.1' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="py-12 text-center text-slate-400 text-xs">
+                        No audit events recorded for the selected filter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+{% if logs.pages and logs.pages > 1 %}
+<div class="flex justify-between items-center text-xs">
+    <div>
+        {% if logs.has_prev %}
+        <a href="{{ url_for('admin.audit_logs', page=logs.prev_num, action=action_filter) }}"
+           class="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50">
+            &larr; Previous Page
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="flex items-center space-x-1 font-mono text-slate-500">
+        Page {{ logs.page }} of {{ logs.pages }}
+    </div>
+
+    <div>
+        {% if logs.has_next %}
+        <a href="{{ url_for('admin.audit_logs', page=logs.next_num, action=action_filter) }}"
+           class="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50">
+            Next Page &rarr;
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

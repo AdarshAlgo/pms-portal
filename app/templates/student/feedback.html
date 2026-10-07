@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Feedback Trail - Student Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-4">
+    <!-- Header -->
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Faculty Feedback Audit Trail</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    Evaluation History
+                </span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                Chronological record of remarks, rubric feedback, and milestone approvals from your assigned guide.
+            </p>
+        </div>
+        <a href="{{ url_for('student.dashboard') }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if all_feedback %}
+    <div class="space-y-6">
+        {% for item in all_feedback %}
+        {% set sub = item.submission %}
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl relative overflow-hidden">
+            <!-- Milestone Title & Submission Meta Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-extrabold shadow-sm">
+                        M{{ sub.milestone.milestone_order }}
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-base text-slate-900 dark:text-white">{{ sub.milestone.title }}</h3>
+                        <div class="text-xs text-slate-400 font-mono">
+                            Submitted: {{ sub.created_at.strftime('%b %d, %Y at %H:%M') if sub.created_at else 'Recent' }}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    {% if sub.status == 'approved' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            <i class="fas fa-check-circle mr-1.5 text-emerald-600"></i> Approved &amp; Scored
+                        </span>
+                    {% elif sub.status == 'revision_required' %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                            <i class="fas fa-exclamation-triangle mr-1.5 text-amber-600"></i> Revision Required
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
+                            <i class="fas fa-clock mr-1.5 text-blue-600"></i> {{ sub.status | capitalize }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Feedback Log Entries -->
+            <div class="space-y-4">
+                {% for fb in item.feedback %}
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 relative">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                {{ fb.author.full_name[:1] if fb.author else 'F' }}
+                            </div>
+                            <span class="font-extrabold text-xs text-slate-800 dark:text-slate-200">
+                                {{ fb.author.full_name if fb.author else 'Dr. Ankit Verma' }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">
+                                &bull; {{ fb.created_at.strftime('%b %d, %Y') if fb.created_at else 'Recent' }}
+                            </span>
+                        </div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded
+                            {% if fb.feedback_type == 'approval' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300
+                            {% elif fb.feedback_type == 'revision_request' %}bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300
+                            {% else %}bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300{% endif %}">
+                            {{ fb.feedback_type.replace('_', ' ') }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed pl-8 italic">
+                        "{{ fb.content }}"
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if sub.submission_text %}
+            <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+                <span class="truncate max-w-md">Deliverable abstract: {{ sub.submission_text[:80] }}...</span>
+                {% if sub.file_url %}
+                <a href="{{ sub.file_url }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center">
+                    <i class="fas fa-external-link-alt mr-1 text-[10px]"></i> View Repository
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-12 text-center border border-slate-200/80 dark:border-slate-800 shadow-sm max-w-xl mx-auto">
+        <div class="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2">No Feedback Logs Recorded Yet</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed mb-6">
+            When your guide evaluates your submitted milestone deliverables, written comments and rubric criteria ratings will appear here.
+        </p>
+        <a href="{{ url_for('student.dashboard') }}" class="btn-shimmer px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center">
+            Return to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

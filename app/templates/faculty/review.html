@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Review Milestone Submission - Faculty{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-4">
+    <!-- Top Header & Breadcrumbs -->
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center space-x-2">
+                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Review Milestone Submission</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    Faculty Desk
+                </span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                {{ submission.project.title }} &bull; {{ submission.project.team.team_name }}
+            </p>
+        </div>
+        <div class="flex items-center space-x-2.5">
+            <a href="{{ url_for('faculty.evaluate_submission', submission_id=submission.id) }}" class="btn-shimmer px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-600/20 transition-all flex items-center">
+                <i class="fas fa-calculator mr-2"></i> Open Quantitative Rubric Matrix
+            </a>
+            <a href="{{ url_for('faculty.team_detail', id=submission.project.team_id) }}" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Team Details
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left 2 Cols: Submission Details & Review Action Form -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Deliverable Info Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl relative overflow-hidden">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
+                            Milestone {{ submission.milestone.milestone_order }} &bull; Weight {{ submission.milestone.weightage_percent }}%
+                        </span>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white mt-2">{{ submission.milestone.title }}</h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                        {% if submission.status == 'approved' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300
+                        {% elif submission.status == 'revision_required' %}bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300
+                        {% else %}bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300{% endif %}">
+                        {{ submission.status.replace('_', ' ') }}
+                    </span>
+                </div>
+
+                <div class="space-y-4 text-xs text-slate-600 dark:text-slate-300 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div>
+                        <span class="font-bold uppercase tracking-wider text-slate-400 text-[10px] block mb-1">Student Deliverable Notes</span>
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 leading-relaxed font-normal italic">
+                            "{{ submission.submission_text or 'No description text provided.' }}"
+                        </div>
+                    </div>
+
+                    {% if submission.file_url %}
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50">
+                        <div class="flex items-center space-x-2.5">
+                            <i class="fab fa-github text-lg text-indigo-600 dark:text-indigo-400"></i>
+                            <div>
+                                <div class="font-bold text-slate-900 dark:text-white text-xs">External Deliverable / Repository</div>
+                                <div class="text-[11px] text-indigo-600 dark:text-indigo-400 truncate max-w-xs">{{ submission.file_url }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ submission.file_url }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center shadow-xs">
+                            Inspect Code <i class="fas fa-external-link-alt ml-1.5 text-[10px]"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Review Feedback Action Form -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl">
+                <h4 class="text-base font-extrabold text-slate-900 dark:text-white mb-2">Faculty Evaluation Decision</h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">Record approval status or request immediate revisions for this sprint deliverable.</p>
+
+                <form method="POST" action="{{ url_for('faculty.review_submission', submission_id=submission.id) }}" class="space-y-5">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                            Decision Status <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 cursor-pointer hover:border-emerald-500 transition-colors">
+                                <input type="radio" name="status" value="approved" required class="text-emerald-600 focus:ring-emerald-500" {% if submission.status == 'approved' %}checked{% endif %}>
+                                <span class="ml-2.5 text-xs font-bold text-slate-800 dark:text-slate-200">Approve Milestone</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 cursor-pointer hover:border-amber-500 transition-colors">
+                                <input type="radio" name="status" value="revision_required" class="text-amber-600 focus:ring-amber-500" {% if submission.status == 'revision_required' %}checked{% endif %}>
+                                <span class="ml-2.5 text-xs font-bold text-slate-800 dark:text-slate-200">Request Revision</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 cursor-pointer hover:border-rose-500 transition-colors">
+                                <input type="radio" name="status" value="rejected" class="text-rose-600 focus:ring-rose-500">
+                                <span class="ml-2.5 text-xs font-bold text-slate-800 dark:text-slate-200">Reject Deliverable</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="feedback" class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                            Feedback Remarks &amp; Actionable Guidance
+                        </label>
+                        <textarea id="feedback" name="feedback" rows="4" placeholder="Enter specific criteria feedback, implementation recommendations, or reasons for requested revision..."
+                                  class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex justify-between items-center">
+                        <span class="text-[11px] text-slate-400">Chief Guide: Dr. Ankit Verma</span>
+                        <button type="submit" class="btn-shimmer px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all active:scale-[0.98] flex items-center">
+                            <i class="fas fa-check mr-2"></i> Submit Evaluation Decision
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Right Col: Team Info & Submission Timeline -->
+        <div class="space-y-6">
+            <!-- Author Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-4">Submission Meta</h4>
+                <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-500">Submitted By:</span>
+                        <strong class="text-slate-800 dark:text-slate-200">{{ submission.submitter.full_name }}</strong>
+                    </div>
+                    <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-500">Submission Date:</span>
+                        <span class="text-slate-800 dark:text-slate-200 font-mono">{{ submission.created_at.strftime('%b %d, %Y') if submission.created_at else 'Recent' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-500">Chief Guide:</span>
+                        <strong class="text-indigo-600 dark:text-indigo-400">Dr. Ankit Verma</strong>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500">Lead Scholar:</span>
+                        <strong class="text-purple-600 dark:text-purple-400">Adarsh Katiyar</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            {% if timeline %}
+            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-4">Activity Timeline</h4>
+                <div class="space-y-3.5">
+                    {% for event in timeline %}
+                    <div class="flex items-start space-x-2.5 text-xs">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shrink-0"></span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 text-[11px]">{{ event.action }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">{{ event.timestamp.strftime('%b %d, %H:%M') if event.timestamp else '' }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+<div id="flash-messages-container" class="mb-4 space-y-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% set alert_color = 'blue' %}
+                {% set alert_icon = 'fa-info-circle' %}
+                
+                {% if category == 'success' %}
+                    {% set alert_color = 'emerald' %}
+                    {% set alert_icon = 'fa-check-circle' %}
+                {% elif category == 'error' or category == 'danger' %}
+                    {% set alert_color = 'red' %}
+                    {% set alert_icon = 'fa-exclamation-circle' %}
+                {% elif category == 'warning' %}
+                    {% set alert_color = 'amber' %}
+                    {% set alert_icon = 'fa-exclamation-triangle' %}
+                {% endif %}
+
+                <div class="flash-message flex items-center p-4 rounded-lg bg-{{ alert_color }}-50 text-{{ alert_color }}-800 border border-{{ alert_color }}-200 shadow-sm transition-opacity duration-300" role="alert">
+                    <i class="fas {{ alert_icon }} flex-shrink-0 text-xl mr-3"></i>
+                    <div class="text-sm font-medium flex-1">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-{{ alert_color }}-50 text-{{ alert_color }}-500 rounded-lg focus:ring-2 focus:ring-{{ alert_color }}-400 p-1.5 hover:bg-{{ alert_color }}-200 inline-flex h-8 w-8 items-center justify-center dismiss-btn" aria-label="Close">
+                        <span class="sr-only">Close</span>
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>

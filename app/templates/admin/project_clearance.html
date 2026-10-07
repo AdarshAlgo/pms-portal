@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Project Proposal Clearance Desk - Institutional Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Project Proposal Clearance Desk</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800">
+                Institutional Gatekeeper
+            </span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Review student capstone project proposals, verify UN SDG 9 alignment, and grant institutional clearance.</p>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="flex flex-wrap items-center gap-2 mb-8 border-b border-slate-200 dark:border-slate-800 pb-3">
+    <a href="{{ url_for('admin.project_clearance', status='proposed') }}"
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all {% if current_status == 'proposed' %}bg-indigo-600 text-white shadow-sm shadow-indigo-600/30{% else %}bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800{% endif %}">
+        <i class="fas fa-inbox mr-1.5"></i> Awaiting Clearance (Proposed)
+    </a>
+    <a href="{{ url_for('admin.project_clearance', status='approved') }}"
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all {% if current_status == 'approved' %}bg-indigo-600 text-white shadow-sm shadow-indigo-600/30{% else %}bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800{% endif %}">
+        <i class="fas fa-check-circle mr-1.5"></i> Approved Projects
+    </a>
+    <a href="{{ url_for('admin.project_clearance', status='revision_required') }}"
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all {% if current_status == 'revision_required' %}bg-indigo-600 text-white shadow-sm shadow-indigo-600/30{% else %}bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800{% endif %}">
+        <i class="fas fa-exclamation-triangle mr-1.5"></i> Revision Requested
+    </a>
+    <a href="{{ url_for('admin.project_clearance', status='all') }}"
+       class="px-4 py-2 rounded-xl text-xs font-bold transition-all {% if current_status == 'all' %}bg-indigo-600 text-white shadow-sm shadow-indigo-600/30{% else %}bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800{% endif %}">
+        <i class="fas fa-list mr-1.5"></i> All Proposals ({{ projects | length }})
+    </a>
+</div>
+
+<!-- Proposals Grid / Cards -->
+<div class="space-y-6">
+    {% for p in projects %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden transition-all hover:border-indigo-300 dark:hover:border-indigo-700">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div>
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        {{ p.domain or 'Engineering' }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <i class="fas fa-leaf mr-1"></i> {{ p.sdg_alignment or 'SDG 9' }}
+                    </span>
+                    <span class="text-xs text-slate-400 font-mono">ID: #{{ p.id }}</span>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white leading-tight">{{ p.title }}</h3>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-3">
+                    <span>Team: <strong class="text-slate-800 dark:text-slate-200">{{ p.team.team_name if p.team else 'Independent' }}</strong></span>
+                    <span>&bull;</span>
+                    <span>Guide: <strong class="text-indigo-600 dark:text-indigo-400">{{ p.team.guide.full_name if (p.team and p.team.guide) else 'Unassigned' }}</strong></span>
+                    <span>&bull;</span>
+                    <span>Submitted: {{ p.created_at.strftime('%b %d, %Y') if p.created_at else 'Recent' }}</span>
+                </div>
+            </div>
+
+            <!-- Current Status Badge -->
+            <div>
+                {% if p.status == 'approved' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-800 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Institutional Clearance Approved
+                    </span>
+                {% elif p.status == 'proposed' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-800 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Pending Institutional Clearance
+                    </span>
+                {% elif p.status == 'revision_required' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-950/80 dark:text-purple-300 dark:border-purple-800 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-purple-500"></span> Revision Requested
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> {{ p.status | capitalize }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Abstract & Tech Stack -->
+        <div class="space-y-3 mb-6">
+            <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Project Abstract &amp; Problem Statement:</span>
+                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                    {{ p.abstract or 'No formal abstract submitted.' }}
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                {% if p.technology_stack %}
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
+                    <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Tech Stack:</span>
+                    <span class="font-mono text-slate-800 dark:text-slate-200">{{ p.technology_stack }}</span>
+                </div>
+                {% endif %}
+                {% if p.github_url or p.repository_url %}
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Repository:</span>
+                        <a href="{{ p.github_url or p.repository_url }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center">
+                            <i class="fab fa-github mr-1.5"></i> Open Git Repo
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Clearance Action Form -->
+        <form method="POST" action="{{ url_for('admin.project_clearance_decision', project_id=p.id) }}" class="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+            <div class="w-full sm:w-1/2">
+                <input type="text" name="comments" placeholder="Optional clearance feedback or revision notes..."
+                       class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
+            </div>
+
+            <div class="flex items-center space-x-2 shrink-0">
+                <button type="submit" name="decision" value="approve"
+                        class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 transition-all flex items-center">
+                    <i class="fas fa-check mr-1.5"></i> Grant Clearance
+                </button>
+                <button type="submit" name="decision" value="revision_required"
+                        class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm shadow-amber-500/20 transition-all flex items-center">
+                    <i class="fas fa-redo mr-1.5"></i> Request Revision
+                </button>
+                <button type="submit" name="decision" value="reject"
+                        onclick="return confirm('Are you sure you want to reject this capstone proposal?');"
+                        class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 dark:bg-slate-800 dark:hover:bg-rose-950/50 dark:text-rose-400 dark:border-rose-900 transition-all">
+                    Reject
+                </button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-clipboard-check"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">No Proposals Found</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">There are currently no proposals matching status '{{ current_status }}'.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

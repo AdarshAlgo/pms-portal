@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Project Monitoring System{% endblock %}</title>
+    
+    <!-- Theme Initializer (prevents flash of white in dark mode) -->
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Font Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="mesh-bg bg-slate-50 dark:bg-[#08090a] text-slate-800 dark:text-slate-100 font-sans antialiased overflow-x-hidden flex h-screen transition-colors duration-300">
+
+    <!-- 🌌 Universal Full-Page Interactive Particle Mesh Background -->
+    {% include 'components/_particle_background.html' %}
+
+    {% if current_user.is_authenticated %}
+        <!-- Aurora Top Bar -->
+        <div class="aurora-bar h-[2px] w-full fixed top-0 left-0 z-[60]"></div>
+        
+        <!-- Sidebar -->
+        {% include 'components/_sidebar.html' %}
+        
+        <!-- Main Wrapper -->
+        <div class="flex-1 flex flex-col overflow-hidden transition-all duration-300 bg-transparent min-w-0" id="main-content">
+            <!-- Navbar -->
+            {% include 'components/_navbar.html' %}
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-transparent text-slate-800 dark:text-slate-100 relative transition-colors duration-300 custom-scrollbar">
+                <!-- Ambient background glow for dashboards -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-r from-indigo-500/[0.04] via-purple-500/[0.03] to-emerald-500/[0.03] rounded-full blur-[100px] pointer-events-none -z-10"></div>
+
+                <!-- Flash Messages -->
+                {% include 'components/_flash_messages.html' %}
+                
+                {% block content %}{% endblock %}
+            </main>
+            
+            <!-- Footer -->
+            <footer class="bg-white/80 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center text-sm text-gray-600 dark:text-slate-400 backdrop-blur-md transition-colors">
+                <div class="flex items-center space-x-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span>&copy; 2026 Project Monitoring Software System</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 rounded-lg text-[10px] font-bold border border-indigo-200 dark:border-indigo-500/30">SDG 9 Aligned</span>
+                </div>
+            </footer>
+        </div>
+    {% else %}
+        <!-- For unauthenticated users (login/register/onboard) -->
+        <main class="w-full h-full min-h-screen overflow-y-auto bg-transparent relative z-10 flex flex-col custom-scrollbar">
+            <!-- Flash Messages -->
+            <div class="absolute top-4 right-4 z-50">
+                {% include 'components/_flash_messages.html' %}
+            </div>
+            {% block auth_content %}{% endblock %}
+        </main>
+    {% endif %}
+
+    <!-- Global Slide-Over Inspection Drawer (Apple Style) -->
+    <div id="global-drawer-backdrop" class="drawer-backdrop" style="position: fixed; inset: 0;"></div>
+    <div id="global-drawer-panel" class="drawer-panel" style="position: fixed; top: 0; right: 0; bottom: 0;">
+        <div class="p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50/80 dark:bg-[#12141c]/80 backdrop-blur-md">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                <h3 id="global-drawer-title" class="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">Inspection Details</h3>
+            </div>
+            <button id="global-drawer-close" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 flex items-center justify-center transition-colors" title="Close drawer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+        <div id="global-drawer-body" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification Container (Apple Style) -->
+    <div id="toast-container" style="position: fixed; bottom: 1.5rem; right: 1.5rem;"></div>
+
+    {% if current_user.is_authenticated %}
+        <!-- Vidya AI Copilot Widget -->
+        {% include 'components/_ai_copilot.html' %}
+    {% endif %}
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    
+    <!-- Staggered animation observer -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Observe elements with data-animate for scroll-reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = `${i * 80}ms`;
+                    entry.target.classList.add('animate-fade-in-up');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+    });
+    </script>
+    
+    <!-- Stripe-Inspired Full-Page Particle Mesh Engine -->
+    <script src="{{ url_for('static', filename='js/particle_mesh.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

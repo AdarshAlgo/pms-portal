@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Milestones Matrix - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Standard Milestones Timeline</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">Evaluation Gates</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Institutional capstone delivery gates, deadlines, and evaluation weightages.</p>
+</div>
+
+<div class="space-y-4">
+    {% for m in milestones %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover-glow card-interactive transition-all">
+        <div class="flex items-start space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-black text-lg border border-purple-200 dark:border-purple-800">
+                #{{ m.milestone_order }}
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ m.title }}</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">{{ m.description }}</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-6">
+            <div class="text-right">
+                <div class="text-xs text-slate-400">Deadline</div>
+                <div class="text-xs font-bold text-slate-800 dark:text-slate-200 font-mono">{{ m.deadline.strftime('%b %d, %Y') if m.deadline else 'Flexible' }}</div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-slate-400">Weightage</div>
+                <div class="text-sm font-black text-purple-600 dark:text-purple-400">{{ m.weightage_percent }}%</div>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                Mandatory
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

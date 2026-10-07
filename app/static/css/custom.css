@@ -1,0 +1,731 @@
+/* ==============================================================================
+   🌟 HIGH-END DESIGN SYSTEM: LINEAR • STRIPE • VERCEL • APPLE SYNTHESIS
+   Capstone Project Progress Monitoring & Evaluation System (UN SDG 9)
+   Palette: Deep Charcoal/Zinc (#08090a, #0e1015) • Glass • Bento • Radiant Glow
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Stripe & Linear Ambient Tokens */
+    --primary-indigo: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.28);
+    --purple-glow: rgba(168, 85, 247, 0.25);
+    --emerald-glow: rgba(16, 185, 129, 0.25);
+    --amber-glow: rgba(245, 158, 11, 0.25);
+    --rose-glow: rgba(244, 63, 94, 0.25);
+
+    /* Light Canvas (Apple / Stripe Pure Minimal) */
+    --bg-canvas: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-elevated: #ffffff;
+    --border-subtle: rgba(226, 232, 240, 0.85);
+    --border-highlight: #ffffff;
+
+    /* Dark Canvas (Linear / Vercel Deep Obsidian) */
+    --dark-bg-canvas: #08090a;
+    --dark-bg-surface: #0e1015;
+    --dark-bg-elevated: #161820;
+    --dark-border-subtle: rgba(255, 255, 255, 0.08);
+    --dark-border-highlight: rgba(255, 255, 255, 0.15);
+}
+
+html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-body);
+    color: #0f172a;
+    background-color: var(--bg-canvas);
+    isolation: isolate;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.dark body {
+    background-color: var(--dark-bg-canvas) !important;
+    color: #f1f5f9 !important;
+}
+
+/* Offset for floating island sticky header */
+[id] {
+    scroll-margin-top: 6.5rem;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em; /* Apple typography tight tracking */
+}
+
+/* ==============================================================================
+   1. 🌌 AMBIENT MESH BACKDROP & AURORA LIGHTING (Stripe + Linear)
+   ============================================================================== */
+.mesh-bg {
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
+html.dark .mesh-bg,
+html.dark body.mesh-bg {
+    background-color: #08090a !important;
+    background-image:
+        radial-gradient(ellipse 90% 50% at 50% -15%, rgba(99, 102, 241, 0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 70% 40% at 95% 15%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 5% 15%, rgba(16, 185, 129, 0.09) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(14, 16, 21, 0.95) 0%, transparent 80%);
+    background-attachment: fixed;
+}
+
+/* Linear-style dot matrix grid */
+.bg-subtle-dots {
+    background-size: 24px 24px;
+    background-image: radial-gradient(rgba(99, 102, 241, 0.1) 1.2px, transparent 1.2px);
+    mask-image: radial-gradient(ellipse 70% 50% at 50% 20%, #000 35%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 20%, #000 35%, transparent 100%);
+}
+
+html.dark .bg-subtle-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 25%, #000 35%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 25%, #000 35%, transparent 100%);
+}
+
+/* ==============================================================================
+   2. 💎 GLASSMORPHISM & TOP-EDGE INNER HIGHLIGHTS (Stripe + Linear)
+   ============================================================================== */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow:
+        0 10px 30px -8px rgba(0, 0, 0, 0.05),
+        0 4px 6px -4px rgba(0, 0, 0, 0.02),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+html.dark .glass-panel {
+    background: rgba(14, 16, 21, 0.82) !important;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow:
+        0 20px 45px -12px rgba(0, 0, 0, 0.7),
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Linear top-edge inner highlight bar */
+.top-edge-highlight {
+    position: relative;
+}
+.top-edge-highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ==============================================================================
+   3. 🍱 BENTO GRID & ASYMMETRIC CARD CONTAINERS (Vercel + Linear)
+   ============================================================================== */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.25rem;
+}
+
+.bento-card {
+    position: relative;
+    border-radius: 1.5rem;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+html.dark .bento-card {
+    background: #0e1015 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.bento-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(99, 102, 241, 0.35) !important;
+    box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.15) !important;
+}
+
+html.dark .bento-card:hover {
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Top highlight hairline on bento cards */
+.bento-card::after {
+    content: '';
+    position: absolute;
+    inset-x: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+.bento-card:hover::after {
+    opacity: 1;
+}
+
+/* ==============================================================================
+   4. ⚡ BUTTONS, SHIMMER & RADIANT GLOW (Stripe + Apple)
+   ============================================================================== */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg);
+    transition: none;
+}
+.btn-shimmer:hover::after {
+    left: 150%;
+    transition: all 0.75s ease-in-out;
+}
+.btn-shimmer:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+}
+.btn-shimmer:active {
+    transform: translateY(0px) scale(0.98);
+}
+
+/* Radiant glow button on hover */
+.btn-radiant:hover {
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.45);
+    border-color: rgba(99, 102, 241, 0.6);
+}
+
+/* Apple-style floating pill action */
+.btn-pill-action {
+    border-radius: 9999px;
+    padding: 0.55rem 1.25rem;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    letter-spacing: -0.01em;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==============================================================================
+   5. 📊 LINEAR HIGH-UTILITY DATATABLE STYLING
+   ============================================================================== */
+.linear-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.8125rem;
+}
+
+.linear-table thead tr {
+    background: rgba(248, 250, 252, 0.8);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .linear-table thead tr {
+    background: #08090a !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.linear-table th {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    color: #64748b;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .linear-table th {
+    color: #94a3b8 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.linear-table tbody tr {
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+html.dark .linear-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.linear-table tbody tr:hover {
+    background-color: rgba(248, 250, 252, 0.9);
+}
+
+html.dark .linear-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.linear-table td {
+    padding: 0.875rem 1.25rem;
+    vertical-align: middle;
+}
+
+/* ==============================================================================
+   6. 🟢 MINIMALIST STATUS PILLS WITH PULSING INDICATORS (Linear + Stripe)
+   ============================================================================== */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+/* Emerald: Approved / Completed */
+.status-pill-emerald {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+html.dark .status-pill-emerald {
+    background: rgba(16, 185, 129, 0.14);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Amber: Pending / Under Review */
+.status-pill-amber {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+html.dark .status-pill-amber {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fde68a;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Rose: Overdue / At Risk / Rejected */
+.status-pill-rose {
+    background: #fff1f2;
+    color: #9f1239;
+    border-color: #fecdd3;
+}
+html.dark .status-pill-rose {
+    background: rgba(244, 63, 94, 0.14);
+    color: #fda4af;
+    border-color: rgba(244, 63, 94, 0.3);
+}
+
+/* Indigo: Active / In Progress */
+.status-pill-indigo {
+    background: #eef2ff;
+    color: #3730a3;
+    border-color: #c7d2fe;
+}
+html.dark .status-pill-indigo {
+    background: rgba(99, 102, 241, 0.14);
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Pulse Dot Engine */
+.pulse-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+}
+.pulse-indicator::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.6;
+    animation: pulseRing 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+@keyframes pulseRing {
+    0% { transform: scale(1); opacity: 0.7; }
+    70% { transform: scale(2.4); opacity: 0; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* ==============================================================================
+   7. 📋 FORM INPUTS & RADIANT CONTROLS (Linear + Vercel)
+   ============================================================================== */
+.linear-input,
+.linear-select,
+.linear-textarea {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.8125rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    background-color: #ffffff;
+    color: #0f172a;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+html.dark .linear-input,
+html.dark .linear-select,
+html.dark .linear-textarea {
+    background-color: #08090a !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+}
+
+.linear-input:focus,
+.linear-select:focus,
+.linear-textarea:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18), 0 0 16px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Drag and Drop Zone Ripple Animation */
+.dropzone-active {
+    border-color: #6366f1 !important;
+    background-color: rgba(99, 102, 241, 0.08) !important;
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.25) !important;
+    transform: scale(1.005);
+}
+
+/* ==============================================================================
+   8. 🪟 SLIDE-OVER INSPECTION DRAWERS (Apple Style)
+   ============================================================================== */
+.drawer-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 70 !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-panel {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 42rem !important;
+    background: #ffffff;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+    z-index: 80 !important;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+html.dark .drawer-panel {
+    background: #0e1015 !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.drawer-open .drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.drawer-open .drawer-panel {
+    transform: translateX(0);
+}
+
+/* ==============================================================================
+   9. 🍞 NON-INTRUSIVE FLOATING TOASTS (Apple Style)
+   ============================================================================== */
+#toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+
+.toast-item {
+    pointer-events: auto;
+    min-width: 20rem;
+    max-width: 26rem;
+    padding: 0.875rem 1.15rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    position: relative;
+    overflow: hidden;
+}
+
+html.dark .toast-item {
+    background: rgba(14, 16, 21, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.7) !important;
+    color: #f8fafc;
+}
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #6366f1;
+    width: 100%;
+    animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* ==============================================================================
+   10. 📈 CUSTOM CHART.JS TOOLTIP STYLING
+   ============================================================================== */
+.chart-tooltip-custom {
+    background: rgba(14, 16, 21, 0.92) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 0.875rem !important;
+    padding: 0.65rem 0.9rem !important;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+    font-size: 0.75rem !important;
+    font-family: var(--font-body) !important;
+    pointer-events: none !important;
+    transition: all 0.15s ease !important;
+}
+
+/* ==============================================================================
+   11. 🧭 SIDEBAR OBSIDIAN POLISH (Linear.app Style)
+   ============================================================================== */
+#sidebar {
+    background: #08090a !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+#sidebar nav a {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+}
+
+#sidebar nav a:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+    transform: translateX(2px);
+}
+
+#sidebar nav a.bg-white\/10 {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+/* ==============================================================================
+   12. 🎨 ULTRA-SLIM SCROLLBARS
+   ============================================================================== */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
+}
+html.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+}
+
+/* ==============================================================================
+   13. 🌐 STRIPE-STYLE MARQUEE & GLOW SHADERS
+   ============================================================================== */
+@keyframes marquee-scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 28s linear infinite;
+}
+
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
+.marquee-mask {
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+}
+
+.glow-card-active {
+    box-shadow: 0 0 35px -5px rgba(99, 102, 241, 0.35);
+    border-color: rgba(99, 102, 241, 0.7) !important;
+}
+
+.hotspot-active-ring {
+    box-shadow: 0 0 40px -4px rgba(99, 102, 241, 0.45) !important;
+    border-color: rgba(99, 102, 241, 0.8) !important;
+    transform: scale(1.01) !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.hotspot-chip-active {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    border-color: #818cf8 !important;
+    box-shadow: 0 0 20px -2px rgba(99, 102, 241, 0.4) !important;
+    transform: translateY(-1px) scale(1.02) !important;
+}
+
+/* ==============================================================================
+   14. 🌌 GLOBAL INTERACTIVE TECH NODE CONSTELLATION & PARTICLE STARDUST
+   ============================================================================== */
+.particle-mesh-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    pointer-events: none !important;
+    z-index: 0 !important; /* Keep behind UI elements but above base page background */
+    opacity: 1 !important;
+    transition: opacity 0.4s ease;
+}
+
+/* Inner containers with .mesh-bg: keep transparent so particles show through */
+div.mesh-bg,
+main.mesh-bg,
+.auth-wrapper {
+    background-color: transparent !important;
+}
+
+/* Dashboard Layout & Z-Index Layering:
+   Place canvas container behind all UI cards, sidebars, and topbars. */
+#main-content {
+    background-color: transparent !important;
+    position: relative;
+    z-index: 1;
+}
+
+#main-content main {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    position: relative;
+    z-index: 2;
+}
+
+html.dark #main-content main {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    position: relative;
+    z-index: 2;
+}
+
+/* Sidebars and Topbars strictly elevated */
+#sidebar {
+    z-index: 30;
+}
+@media (min-width: 1024px) {
+    #sidebar {
+        position: relative;
+    }
+}
+
+header, #navbar {
+    position: relative;
+    z-index: 25;
+}
+
+/* Ensure UI cards, navigation, forms, and controls are elevated above canvas and 100% interactive */
+.bento-card, .stat-card, .content-card, form, table, [role="dialog"], #notifications-wrapper {
+    position: relative;
+    z-index: 10;
+}
+
+/* Modals and overlay dialogs must remain fixed */
+.modal-panel, [role="dialog"].modal-panel {
+    position: fixed !important;
+    z-index: 85 !important;
+}
+
+
+

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Institutional Analytics - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Institutional Capstone Analytics</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">Executive Report</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Cross-departmental performance benchmarks, rubric score distributions, and milestone completion velocity.</p>
+</div>
+
+<!-- Metrics Quick Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center hover-glow transition-all">
+        <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mr-4 shadow-inner">
+            <i class="fas fa-folder-open"></i>
+        </div>
+        <div>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Projects</p>
+            <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{{ projects | length }}</p>
+        </div>
+    </div>
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center hover-glow transition-all">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mr-4 shadow-inner">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Average Score</p>
+            <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5">88.5%</p>
+        </div>
+    </div>
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center hover-glow transition-all">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mr-4 shadow-inner">
+            <i class="fas fa-building"></i>
+        </div>
+        <div>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Departments</p>
+            <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{{ departments | length }}</p>
+        </div>
+    </div>
+    <div class="stat-card bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center hover-glow transition-all">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mr-4 shadow-inner">
+            <i class="fas fa-flag"></i>
+        </div>
+        <div>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Milestone Gates</p>
+            <p class="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{{ milestones | length }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Bar Chart -->
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-chart-bar text-indigo-600 dark:text-indigo-400 mr-2"></i> Capstone Completion Across Projects
+            </h3>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">5 Cohorts</span>
+        </div>
+        <div class="relative w-full" style="height: 280px; max-height: 280px;">
+            <canvas id="adminProjectsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Doughnut Chart -->
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-chart-pie text-purple-600 dark:text-purple-400 mr-2"></i> Departmental Project Distribution
+            </h3>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">Distribution</span>
+        </div>
+        <div class="relative w-full flex items-center justify-center" style="height: 280px; max-height: 280px;">
+            <canvas id="adminDeptsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function isDark() {
+        return document.documentElement.classList.contains('dark');
+    }
+
+    const textColor = isDark() ? '#cbd5e1' : '#334155';
+    const gridColor = isDark() ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+
+    // Projects Completion Chart
+    const ctxProjects = document.getElementById('adminProjectsChart');
+    if (ctxProjects) {
+        new Chart(ctxProjects, {
+            type: 'bar',
+            data: {
+                labels: [
+                    ['Krishi-Drishti', '(Crop AI)'],
+                    ['Kavach Telemetry', '(Highway)'],
+                    ['Jal-Drishti', '(Water Drone)'],
+                    ['Urja-Net', '(Microgrid)'],
+                    ['Swasthya-AI', '(Diagnostic)']
+                ],
+                datasets: [{
+                    label: 'Milestone Completion %',
+                    data: [100, 75, 50, 25, 50],
+                    backgroundColor: ['#6366f1', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        ticks: { 
+                            color: textColor,
+                            callback: v => v + '%' 
+                        },
+                        grid: { color: gridColor }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            color: textColor,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: false,
+                            font: { family: "'Plus Jakarta Sans', sans-serif", size: 10.5, weight: '700' }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                if (!items.length) return '';
+                                const raw = items[0].label;
+                                return Array.isArray(raw) ? raw.join(' ') : raw;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Dept Chart
+    const ctxDepts = document.getElementById('adminDeptsChart');
+    if (ctxDepts) {
+        new Chart(ctxDepts, {
+            type: 'doughnut',
+            data: {
+                labels: ['Computer Science (CSE)', 'Information Tech (IT)', 'Electronics & Robotics (ECE)'],
+                datasets: [{
+                    data: [2, 2, 1],
+                    backgroundColor: ['#6366f1', '#a855f7', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: textColor }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

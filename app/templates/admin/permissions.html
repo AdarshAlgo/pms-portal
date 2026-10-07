@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Access Governance & Permission Matrix - Admin{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <div class="flex items-center space-x-2">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Access Governance &amp; Permissions</h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">Admin Authority</span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Control faculty grading privileges, student submission access, visibility rules, and monitor active sessions.</p>
+    </div>
+    <div class="flex items-center space-x-3">
+        <a href="{{ url_for('admin.manage_users') }}" class="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-sm transition-all flex items-center">
+            <i class="fas fa-users mr-2 text-slate-400"></i>View Full User Directory
+        </a>
+    </div>
+</div>
+
+<!-- 🟢 Real-Time Active Users Live Telemetry Card -->
+<div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl mb-8 border border-white/10 relative overflow-hidden">
+    <div class="absolute -right-10 -bottom-10 w-64 h-64 ambient-orb orb-indigo opacity-20 pointer-events-none"></div>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 border-b border-white/10 pb-4 relative z-10">
+        <div class="flex items-center space-x-3">
+            <span class="relative flex h-3.5 w-3.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+            </span>
+            <h3 class="text-lg font-bold text-white flex items-center">
+                Currently Active Users on System (Live Telemetry)
+            </h3>
+        </div>
+        <div class="text-xs font-mono bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 flex items-center space-x-2">
+            <i class="fas fa-signal text-emerald-400"></i>
+            <span>{{ active_online_users | length }} Users Active in Last 15 Min</span>
+        </div>
+    </div>
+
+    {% if active_online_users %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+            {% for u in active_online_users %}
+            <div class="bg-white/5 border border-white/10 rounded-xl p-3.5 flex items-center justify-between hover:bg-white/10 transition-all card-interactive">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br {% if u.is_admin %}from-purple-500 to-indigo-600{% elif u.is_faculty %}from-indigo-500 to-blue-600{% else %}from-emerald-500 to-teal-600{% endif %} flex items-center justify-center font-bold text-white text-sm shadow">
+                        {{ u.first_name[0] }}{{ u.last_name[0] }}
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white flex items-center">
+                            {{ u.full_name }}
+                            <span class="ml-1.5 px-1.5 py-0.2 rounded text-[9px] uppercase font-bold {% if u.is_admin %}bg-purple-500/20 text-purple-300{% elif u.is_faculty %}bg-indigo-500/20 text-indigo-300{% else %}bg-emerald-500/20 text-emerald-300{% endif %}">
+                                {{ u.role.role_name }}
+                            </span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 font-mono">{{ u.email }}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span> Online
+                    </span>
+                    <div class="text-[10px] text-slate-400 mt-1">Tier: {{ u.permission_level | capitalize }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-xs text-slate-400 italic relative z-10">No users currently online.</p>
+    {% endif %}
+</div>
+
+<!-- Faculty & Project Guide Permissions Section -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40">
+        <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-chalkboard-teacher text-indigo-600 dark:text-indigo-400 mr-2.5"></i>
+                Faculty &amp; Project Guides Governance
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Control evaluation permissions, grade approval rights, and departmental oversight privileges.</p>
+        </div>
+        <span class="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-lg border border-indigo-100 dark:border-indigo-500/30">
+            {{ faculties | length }} Guides Configured
+        </span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                    <th class="py-3.5 px-6 whitespace-nowrap">Faculty Member</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Department</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Online Status</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Permission Tier</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Evaluation Authority</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Account Status</th>
+                    <th class="py-3.5 px-6 text-right whitespace-nowrap">Apply Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                {% for f in faculties %}
+                <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold flex items-center justify-center text-xs">
+                                {{ f.first_name[0] }}{{ f.last_name[0] }}
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-900 dark:text-white">{{ f.full_name }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ f.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 text-xs text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">
+                        {{ f.department }}
+                    </td>
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        {% if f.is_online %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active Now
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Offline
+                            </span>
+                        {% endif %}
+                    </td>
+                    <form action="{{ url_for('admin.update_permission', user_id=f.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <select name="permission_level" class="text-xs font-semibold rounded-lg border-slate-300 dark:border-slate-700 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 py-1.5 px-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                                <option value="full" {% if f.permission_level == 'full' %}selected{% endif %}>Full Authority</option>
+                                <option value="standard" {% if f.permission_level == 'standard' %}selected{% endif %}>Standard Guide</option>
+                                <option value="restricted" {% if f.permission_level == 'restricted' %}selected{% endif %}>Restricted (Read-Only)</option>
+                            </select>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="can_evaluate" {% if f.can_evaluate %}checked{% endif %} class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-200">
+                                <span class="ml-2 text-xs font-medium text-slate-700 dark:text-slate-300">Can Grade &amp; Evaluate</span>
+                            </label>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_active" {% if f.is_active %}checked{% endif %} class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-200">
+                                <span class="ml-2 text-xs font-semibold {% if f.is_active %}text-emerald-700 dark:text-emerald-400{% else %}text-rose-600 dark:text-rose-400{% endif %}">
+                                    {% if f.is_active %}Active{% else %}Suspended{% endif %}
+                                </span>
+                            </label>
+                        </td>
+                        <td class="py-4 px-6 text-right whitespace-nowrap">
+                            <button type="submit" class="btn-shimmer px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all">
+                                <i class="fas fa-save mr-1"></i> Save
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Student Permissions Section -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
+    <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40">
+        <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fas fa-user-graduate text-emerald-600 dark:text-emerald-400 mr-2.5"></i>
+                Student Project Leads &amp; Scholars Governance
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manage deliverable submission authority, team privileges, and academic enrollment status.</p>
+        </div>
+        <span class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg border border-emerald-100 dark:border-emerald-500/30">
+            {{ students | length }} Students Configured
+        </span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 font-extrabold">
+                    <th class="py-3.5 px-6 whitespace-nowrap">Student Scholar</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Enrollment / Dept</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Online Status</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Permission Tier</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Submission Access</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap">Account Status</th>
+                    <th class="py-3.5 px-6 text-right whitespace-nowrap">Apply Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                {% for s in students %}
+                <tr class="hover:bg-slate-50/75 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center text-xs">
+                                {{ s.first_name[0] }}{{ s.last_name[0] }}
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-900 dark:text-white">{{ s.full_name }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ s.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 font-mono">{{ s.enrollment_number }}</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ s.department }}</div>
+                    </td>
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        {% if s.is_online %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active Now
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Offline
+                            </span>
+                        {% endif %}
+                    </td>
+                    <form action="{{ url_for('admin.update_permission', user_id=s.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <select name="permission_level" class="text-xs font-semibold rounded-lg border-slate-300 dark:border-slate-700 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 py-1.5 px-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                                <option value="full" {% if s.permission_level == 'full' %}selected{% endif %}>Full Access</option>
+                                <option value="standard" {% if s.permission_level == 'standard' %}selected{% endif %}>Standard Student</option>
+                                <option value="restricted" {% if s.permission_level == 'restricted' %}selected{% endif %}>Restricted / Locked</option>
+                            </select>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="can_submit" {% if s.can_submit %}checked{% endif %} class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-200">
+                                <span class="ml-2 text-xs font-medium text-slate-700 dark:text-slate-300">Can Submit Deliverables</span>
+                            </label>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_active" {% if s.is_active %}checked{% endif %} class="rounded border-slate-300 dark:border-slate-700 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring-emerald-200">
+                                <span class="ml-2 text-xs font-semibold {% if s.is_active %}text-emerald-700 dark:text-emerald-400{% else %}text-rose-600 dark:text-rose-400{% endif %}">
+                                    {% if s.is_active %}Active{% else %}Suspended{% endif %}
+                                </span>
+                            </label>
+                        </td>
+                        <td class="py-4 px-6 text-right whitespace-nowrap">
+                            <button type="submit" class="btn-shimmer px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all">
+                                <i class="fas fa-save mr-1"></i> Save
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

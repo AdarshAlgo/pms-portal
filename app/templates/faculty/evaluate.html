@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Submission: {{ submission.milestone.title if (submission and submission.milestone) else 'Milestone' }} - {{ submission.project.team.team_name if (submission and submission.project and submission.project.team) else 'Team' }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center text-sm text-slate-500 dark:text-slate-400">
+    <a href="{{ url_for('faculty.team_detail', id=submission.project.team_id) if (submission and submission.project) else url_for('faculty.dashboard') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center font-bold">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Team Milestones
+    </a>
+</div>
+
+<div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+    <div>
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Evaluate Deliverable</h2>
+        <p class="text-slate-600 dark:text-slate-400 text-xs mt-1">
+            <span class="font-extrabold text-slate-800 dark:text-slate-200">{{ submission.milestone.title if submission.milestone else 'Milestone' }}</span>
+            &bull;
+            Team: <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ submission.project.team.team_name if (submission.project and submission.project.team) else 'N/A' }}</span>
+        </p>
+    </div>
+    <div class="mt-2 md:mt-0">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse"></span>
+            {{ submission.status.replace('_', ' ') }}
+        </span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Evaluation Form -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Submission Details Card -->
+        <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex justify-between items-center">
+                <h3 class="font-bold text-slate-900 dark:text-white flex items-center text-sm">
+                    <i class="fas fa-file-alt mr-2 text-indigo-600 dark:text-indigo-400"></i>Student Deliverable Report
+                </h3>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">Submitted: {{ submission.submitted_at.strftime('%b %d, %Y') if submission.submitted_at else 'Recently' }}</span>
+            </div>
+            <div class="p-6">
+                <div class="text-xs text-slate-800 dark:text-slate-200 mb-6 border border-slate-200 dark:border-slate-700 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 leading-relaxed font-normal">
+                    {{ submission.submission_text or 'No description provided.' }}
+                </div>
+                
+                <div class="flex flex-wrap gap-3">
+                    {% if submission.document_url %}
+                    <a href="{{ submission.document_url }}" target="_blank" class="btn-shimmer inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-bold rounded-xl text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                        <i class="fas fa-file-pdf text-rose-500 mr-2"></i> View Report Document
+                    </a>
+                    {% endif %}
+                    {% if submission.repository_url %}
+                    <a href="{{ submission.repository_url }}" target="_blank" class="btn-shimmer inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-bold rounded-xl text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                        <i class="fab fa-github text-slate-900 dark:text-white mr-2"></i> View Code Repository
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Rubric Evaluation Form -->
+        <form action="{{ url_for('faculty.evaluate_submission', submission_id=submission.id) }}" method="POST" id="evaluationForm" class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+            
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-slate-900 dark:text-white flex items-center text-sm">
+                        <i class="fas fa-tasks mr-2 text-indigo-600 dark:text-indigo-400"></i>Rubric Evaluation Matrix
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ rubric.name if rubric else 'Institutional Rubric' }}</p>
+                </div>
+            </div>
+            
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for criterion in criteria %}
+                {% set existing = existing_scores.get(criterion.id) if existing_scores else None %}
+                <div class="p-6 criterion-row hover:bg-slate-50/40 dark:hover:bg-slate-800/30 transition-colors" data-max-marks="{{ criterion.max_marks }}" data-weightage="{{ criterion.weightage }}">
+                    <div class="flex flex-col md:flex-row justify-between mb-4 gap-3">
+                        <div class="md:w-2/3">
+                            <h4 class="font-extrabold text-slate-900 dark:text-white text-sm">{{ criterion.criterion_name }}</h4>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{{ criterion.description }}</p>
+                            <div class="mt-2.5 flex space-x-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                    Max: {{ criterion.max_marks }} marks
+                                </span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                    Weight: {{ criterion.weightage }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="md:w-1/3 md:text-right flex items-center md:justify-end gap-3">
+                            <div class="w-24">
+                                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Marks</label>
+                                <input type="number" name="marks_{{ criterion.id }}" class="marks-input w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2 px-3 font-black text-center text-sm" min="0" max="{{ criterion.max_marks }}" step="0.5" value="{{ existing.marks if existing else 0 }}" oninput="calculateScores()" required>
+                            </div>
+                            <div class="w-20 text-center">
+                                <div class="text-[11px] font-bold text-slate-400 mb-1">Score</div>
+                                <div class="font-black text-slate-900 dark:text-white score-display text-xs">0 / {{ criterion.max_marks }}</div>
+                            </div>
+                            <div class="w-20 text-center hidden md:block">
+                                <div class="text-[11px] font-bold text-slate-400 mb-1">Weighted</div>
+                                <div class="font-black text-indigo-600 dark:text-indigo-400 weighted-display text-xs">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Criterion Remarks</label>
+                        <input type="text" name="remarks_{{ criterion.id }}" value="{{ existing.remarks if existing else '' }}" placeholder="Specific feedback on this criterion..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2 px-3 text-xs">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Overall Feedback & Action -->
+            <div class="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">Overall Qualitative Review Comments</label>
+                    <textarea name="overall_feedback" rows="3" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs leading-relaxed" required placeholder="Provide comprehensive qualitative review remarks for the student team..."></textarea>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">Evaluation Decision</label>
+                        <select name="status" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 py-2.5 px-3 text-xs font-bold" required>
+                            <option value="approved" class="text-emerald-600 font-bold">Approve Deliverable</option>
+                            <option value="revision_required" class="text-amber-600 font-bold">Request Revision</option>
+                            <option value="rejected" class="text-rose-600 font-bold">Reject</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-shimmer w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 shadow-lg shadow-indigo-600/25 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all border border-indigo-400/30">
+                        <i class="fas fa-check mr-2"></i> Submit &amp; Save Evaluation
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar: Real-time Score Summary & Timeline -->
+    <div class="lg:col-span-1 space-y-6">
+        <!-- Live Score Summary Card -->
+        <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sticky top-24">
+            <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 flex items-center text-sm">
+                <i class="fas fa-calculator text-indigo-500 mr-2"></i>Live Score Calculator
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-600 dark:text-slate-400 font-medium">Total Raw Marks:</span>
+                    <span class="font-extrabold text-slate-900 dark:text-white"><span id="totalObtained">0.0</span> / <span id="totalMax">40.0</span></span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-600 dark:text-slate-400 font-medium">Percentage:</span>
+                    <span class="font-black text-indigo-600 dark:text-indigo-400 text-base" id="percentage">0.0%</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-600 dark:text-slate-400 font-medium">Weighted Score:</span>
+                    <span class="font-extrabold text-slate-900 dark:text-white"><span id="weightedTotal">0.00</span> / 100.00</span>
+                </div>
+                
+                <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-center">
+                    <div class="text-[10px] text-slate-400 uppercase tracking-widest font-black mb-1">Predicted Grade</div>
+                    <div id="predictedGrade" class="text-4xl font-black text-slate-300 dark:text-slate-700">N/A</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback History -->
+        <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <h3 class="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-4 text-sm">
+                Past Feedback Trail
+            </h3>
+            <div class="space-y-3">
+                {% for f in timeline %}
+                <div class="text-xs border-l-2 border-indigo-500 pl-3 py-1">
+                    <span class="font-bold uppercase text-indigo-600 dark:text-indigo-400 text-[10px]">{{ f.feedback_type }}</span>
+                    <p class="text-slate-600 dark:text-slate-300 italic mt-0.5 leading-relaxed">"{{ f.content }}"</p>
+                    <span class="text-[10px] text-slate-400 font-mono">{{ f.created_at.strftime('%b %d, %H:%M') if f.created_at else '' }}</span>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-400 italic text-center py-4">No previous feedback logged.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function calculateScores() {
+    const criteria = document.querySelectorAll('.criterion-row');
+    let totalObtained = 0;
+    let totalMax = 0;
+    let weightedTotal = 0;
+    
+    criteria.forEach(row => {
+        const maxMarks = parseFloat(row.dataset.maxMarks) || 0;
+        const weightage = parseFloat(row.dataset.weightage) || 0;
+        const input = row.querySelector('.marks-input');
+        let obtained = parseFloat(input.value) || 0;
+        
+        if (obtained > maxMarks) {
+            input.value = maxMarks;
+            obtained = maxMarks;
+        }
+        if (obtained < 0) {
+            input.value = 0;
+            obtained = 0;
+        }
+        
+        totalObtained += obtained;
+        totalMax += maxMarks;
+        
+        const normalized = maxMarks > 0 ? (obtained / maxMarks) : 0;
+        const weighted = normalized * weightage;
+        weightedTotal += weighted;
+        
+        const scoreDisp = row.querySelector('.score-display');
+        if (scoreDisp) scoreDisp.textContent = `${obtained.toFixed(1)} / ${maxMarks.toFixed(1)}`;
+        
+        const weightDisp = row.querySelector('.weighted-display');
+        if (weightDisp) weightDisp.textContent = weighted.toFixed(2);
+    });
+    
+    const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+    
+    const totObtEl = document.getElementById('totalObtained');
+    if (totObtEl) totObtEl.textContent = totalObtained.toFixed(1);
+    
+    const totMaxEl = document.getElementById('totalMax');
+    if (totMaxEl) totMaxEl.textContent = totalMax.toFixed(1);
+    
+    const pctEl = document.getElementById('percentage');
+    if (pctEl) pctEl.textContent = percentage.toFixed(1) + '%';
+    
+    const weightTotEl = document.getElementById('weightedTotal');
+    if (weightTotEl) weightTotEl.textContent = weightedTotal.toFixed(2);
+    
+    const gradeBadge = document.getElementById('predictedGrade');
+    if (gradeBadge) {
+        gradeBadge.textContent = getGrade(percentage);
+        gradeBadge.className = 'text-4xl font-black ' + getGradeColor(percentage);
+    }
+}
+
+function getGrade(pct) {
+    if (pct === 0) return 'N/A';
+    if (pct >= 90) return 'A+';
+    if (pct >= 80) return 'A';
+    if (pct >= 70) return 'B+';
+    if (pct >= 60) return 'B';
+    if (pct >= 50) return 'C';
+    return 'F';
+}
+
+function getGradeColor(pct) {
+    if (pct === 0) return 'text-slate-400';
+    if (pct >= 80) return 'text-emerald-500';
+    if (pct >= 60) return 'text-amber-500';
+    return 'text-rose-500';
+}
+
+document.addEventListener('DOMContentLoaded', calculateScores);
+</script>
+{% endblock %}

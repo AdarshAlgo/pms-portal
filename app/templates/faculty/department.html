@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Department Tracking - Faculty{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center space-x-2">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Academic Department Tracking</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">Faculty Overview</span>
+    </div>
+    <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">Cross-departmental monitoring of capstone teams, assigned professors, and progress metrics.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    {% for d in departments %}
+    <div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 hover-glow card-interactive transition-all">
+        <div class="flex justify-between items-start mb-4">
+            <span class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base shadow-inner border border-indigo-100 dark:border-indigo-800">
+                {{ d.code }}
+            </span>
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 text-xs font-bold rounded-lg border border-emerald-300 dark:border-emerald-800">
+                Active Cohort
+            </span>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">{{ d.name }}</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-4">Code: {{ d.code }}</p>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <span class="text-slate-400">Department Head:</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200">{{ d.head_of_department.full_name if d.head_of_department else 'Dr. Ankit Verma' }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Department Projects List -->
+<div class="content-card bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+        <i class="fas fa-project-diagram text-indigo-600 dark:text-indigo-400 mr-2"></i> All Departmental Projects
+    </h3>
+    <div class="space-y-3">
+        {% for p in projects %}
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 hover-glow card-interactive transition-all">
+            <div>
+                <span class="font-bold text-slate-900 dark:text-white text-sm">{{ p.title }}</span>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Team: <strong class="text-slate-800 dark:text-slate-200">{{ p.team.team_name }}</strong> &bull; Dept: <strong class="text-indigo-600 dark:text-indigo-400">{{ p.domain }}</strong>
+                </div>
+            </div>
+            <a href="{{ url_for('faculty.team_detail', id=p.team_id) }}" class="btn-shimmer px-3.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-white rounded-xl text-xs font-bold shadow-xs transition-all">
+                Inspect Team &rarr;
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
